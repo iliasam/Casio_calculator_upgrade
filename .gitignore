@@ -1,0 +1,4 @@
+*.o
+*.cout
+*.s
+/Debug
