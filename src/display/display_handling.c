@@ -1,4 +1,5 @@
 //Routines that draw something at LCD must be placed here
+//Data path is: display_handling.c (generate text) -> lcd_worker.c (text draw) -> ST7565R.c (send image to LCD)
 
 #include "display_handling.h"
 #include "formula_handling.h"
