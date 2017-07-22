@@ -81,6 +81,10 @@ void initialize_keys_gpio(void)
     GPIO_Init(row_gpio[i], &GPIO_InitStructure);
     GPIO_SetBits(row_gpio[i], row_pins[i]);//disable open-drain pull down
   }
+  
+  GPIO_InitStructure.GPIO_Pin = KEY_AC_PIN;
+  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IPD;
+  GPIO_Init(KEY_AC_GPIO, &GPIO_InitStructure);
 }
 
 uint16_t keys_polling(void)
@@ -97,6 +101,9 @@ uint16_t keys_polling(void)
     if (key_state > 0)
       return (row_pos*KEYS_COLUMNS_COUNT + key_state);
   }
+  
+  if ((KEY_AC_GPIO->IDR & KEY_AC_PIN) != 0)
+    return (KEYS_COLUMNS_COUNT * KEYS_ROWS_COUNT + 1);
   return 0;
 }
 

@@ -2097,9 +2097,48 @@
   <group>
     <name>src</name>
     <group>
+      <name>Calculation</name>
+      <file>
+        <name>$PROJ_DIR$\src\calculation\str_math.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\calculation\str_math.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\calculation\str_operate.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\calculation\str_operate.h</name>
+      </file>
+    </group>
+    <group>
       <name>CMSIS</name>
       <file>
         <name>$PROJ_DIR$\src\CMSIS\system_stm32f10x.c</name>
+      </file>
+    </group>
+    <group>
+      <name>display</name>
+      <file>
+        <name>$PROJ_DIR$\src\display\display_handling.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\display_handling.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\fonts.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\lcd_worker.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\lcd_worker.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\ST7565R.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\src\display\ST7565R.h</name>
       </file>
     </group>
     <group>
@@ -2178,7 +2217,16 @@
       <name>$PROJ_DIR$\src\delay_us_timer.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\src\formula_handling.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\src\keys_functions.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\src\keys_handling.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\src\keys_handling.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\src\main.c</name>
@@ -2187,13 +2235,13 @@
       <name>$PROJ_DIR$\src\main.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\src\ST7565R.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\src\ST7565R.h</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\src\stm32f10x_it.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\src\text_functions.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\src\text_functions.h</name>
     </file>
   </group>
 </project>
