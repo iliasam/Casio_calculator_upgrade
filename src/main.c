@@ -26,6 +26,8 @@ FormulaInputStateType formula_input_state = INPUT_MODE_BASIC;
 extern char formula_text[FORMULA_MAX_LENGTH];
 extern uint16_t formula_current_length;
 
+CalcAnswerType calc_result;
+
 int main()
 {
   char str[32];
@@ -106,5 +108,5 @@ void Delay_ms(uint32_t ms)
 
 void solve_formula(void)
 {
-  solve((uint8_t*)formula_text, formula_current_length);
+  calc_result = solve((uint8_t*)formula_text, formula_current_length);
 }

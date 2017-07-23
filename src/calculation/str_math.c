@@ -27,7 +27,7 @@ uint8_t work_buffer_num_count=0;//количество чисел в буфере
 
 double memory_num[4];//память - переменные A B C D
 
-uint8_t errors=0;
+CalcErrorType errors = CACL_ERR_NO;
 
 double x;//регистры математ операций
 double y;
@@ -41,45 +41,56 @@ double answer = 0.0;
 //ответ помещается в переменную answer
 //функция возврашает 0, если ошибок нет, либо код ошибки
 
-uint8_t solve(uint8_t *txt,uint8_t length)
+CalcAnswerType solve(uint8_t *txt,uint8_t length)
 {
-
-  work_buffer_num_count=0;
-  errors=0;
+  CalcAnswerType tmp_answer;
+  
+  tmp_answer.Answer = 0.0;
+  tmp_answer.Error = CACL_ERR_NO;
+  work_buffer_num_count = 0;
+  errors = CACL_ERR_NO;
   
   fill_work_buffer(txt,length);
   replace_functions();
   find_numbers();//заменяет числа одиночными символами - А Б В ...
   bracket_anlyse();//проверяет четность скобок
-  if (errors!=0){return errors;}
-  if (max_bracket_levell==0)//если скобок нет
+  if (errors!= CACL_ERR_NO)
+  {
+    tmp_answer.Error = errors;
+    return tmp_answer;
+  }
+  
+  if (max_bracket_levell == 0)//если скобок нет
   {
     fill_sub_buffer(&work_buffer[0],work_buffer_length);
     solve_sub_buffer();
-    if (errors!=0){return errors;} else {return 0;}
+    tmp_answer.Answer = answer;
+    tmp_answer.Error = errors;
+    return tmp_answer;
   }
   //обработка скобок
   solve_work_buffer();
-  if (errors!=0){return errors;}
-
-  return 0;
+  
+  tmp_answer.Answer = answer;
+  tmp_answer.Error = errors;
+  return tmp_answer;
 }
 
 
 void replace_functions(void)
 {
-//заменяет функции на их знаки
-//обработчик работает с функциями-знаками (функция обозначается одним знаком)
-uint8_t i=0;
-      do
-      {
-        if ((work_buffer[i]==115)&&(work_buffer[i+1]==105)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//sin
-        if ((work_buffer[i]==99)&&(work_buffer[i+1]==111)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//cos
-        if ((work_buffer[i]==116)&&(work_buffer[i+1]==103)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//tg
-        if ((work_buffer[i]==108)&&(work_buffer[i+1]==110)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//ln
-        if ((work_buffer[i]==101)&&(work_buffer[i+1]==120)){replace_by_char(&work_buffer[0],i,3,120);work_buffer_length=work_buffer_length-2;}//exp to x иначе e будет воспринято как E
-        i++;  
-      } while (i<=work_buffer_length-1);
+  //заменяет функции на их знаки
+  //обработчик работает с функциями-знаками (функция обозначается одним знаком)
+  uint8_t i=0;
+  do
+  {
+    if ((work_buffer[i]==115)&&(work_buffer[i+1]==105)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//sin
+    if ((work_buffer[i]==99)&&(work_buffer[i+1]==111)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//cos
+    if ((work_buffer[i]==116)&&(work_buffer[i+1]==103)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//tg
+    if ((work_buffer[i]==108)&&(work_buffer[i+1]==110)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//ln
+    if ((work_buffer[i]==101)&&(work_buffer[i+1]==120)){replace_by_char(&work_buffer[0],i,3,120);work_buffer_length=work_buffer_length-2;}//exp to x иначе e будет воспринято как E
+    i++;  
+  } while (i<=work_buffer_length-1);
 }
 
 
@@ -209,10 +220,22 @@ void solve_sub_buffer(void)
     level++;//если во всей подстроке функций такого уровня больше нет
   }while ((level<6)&&(errors==0));
   
-  if (errors!=0){return;}
+  if (errors!= 0)
+    return;
   
-  if (sub_buffer_length>1){errors=2;return;}
-  if (is_num_sumbol(sub_buffer[0])==1) {answer=numbers[sub_buffer[0]-REPLACE_SYMB_CODE];}else {errors=4;return;}
+  if (sub_buffer_length>1)
+  {
+    errors = CACL_ERR_BAD_FORMULA2;
+    return;
+  }
+  
+  if (is_num_sumbol(sub_buffer[0])==1) 
+    answer = numbers[sub_buffer[0]-REPLACE_SYMB_CODE];
+  else 
+  {
+    errors = CACL_ERR_BAD_FORMULA3;
+    return;
+  }
       
 }
 
@@ -258,17 +281,31 @@ void solve_work_buffer(void)
         max_bracket_levell--;
     }while ((max_bracket_levell>0)&&(errors==0));
     
-  if (errors!=0){return;}
+  if (errors!= CACL_ERR_NO)
+    return;
     
   if (work_buffer_length>1)//если скобок нет
   {
     fill_sub_buffer(&work_buffer[0],work_buffer_length);
     solve_sub_buffer();
-    if (is_num_sumbol(sub_buffer[0])==1) {answer=numbers[sub_buffer[0]-REPLACE_SYMB_CODE];}else {errors=4;return;}
+    
+    if (is_num_sumbol(sub_buffer[0]) == 1) 
+      answer = numbers[sub_buffer[0]-REPLACE_SYMB_CODE];
+    else 
+    {
+      errors=CACL_ERR_BAD_FORMULA3;
+      return;
+    }
   }
   else
   {
-    if (is_num_sumbol(work_buffer[0])==1) {answer=numbers[work_buffer[0]-REPLACE_SYMB_CODE];}else {errors=4;return;}
+    if (is_num_sumbol(work_buffer[0])==1) 
+      answer = numbers[work_buffer[0]-REPLACE_SYMB_CODE];
+    else 
+    {
+      errors=CACL_ERR_BAD_FORMULA3;
+      return;
+    }
   }
       
 }
@@ -282,12 +319,12 @@ void solve_func(uint8_t pos)
 
   switch (sub_buffer[pos])
   {
-  case 43:  solve_plus(pos);break;
-  case 45:  solve_minus(pos);break;
-  case 42:  solve_multiply(pos);break;
-  case 94:  solve_pow(pos);break;
+  case '+':  solve_plus(pos);break;
+  case '-':  solve_minus(pos);break;
+  case '*':  solve_multiply(pos);break;
+  case '^':  solve_pow(pos);break;
   case 250: solve_dbl(pos);break;
-  case 47:  solve_div(pos);break;
+  case '/':  solve_div(pos);break;
   case 115: solve_sin(pos);break;
   case 99:  solve_cos(pos);break;
   case 116: solve_tg(pos);break;
@@ -304,271 +341,267 @@ void solve_func(uint8_t pos)
 void solve_plus(uint8_t pos)
 {
   //проверка, чтобы символы слева и справа от + были числовыми (А Б В Г)
-  if ((is_num_sumbol(sub_buffer[pos-1])==1)&&(is_num_sumbol(sub_buffer[pos+1])==1))
+  if ((is_num_sumbol(sub_buffer[pos-1]) == 1) && (is_num_sumbol(sub_buffer[pos+1]) == 1))
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    y=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=x+y;
-    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE];
+    y = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = x + y;
+    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE] = z;
     
     cut_from_str(&sub_buffer[0],pos,2);
     sub_buffer_length=sub_buffer_length-2;
     work_buffer_num_count--;
-    
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_minus(uint8_t pos)
 {
-  if ((is_num_sumbol(sub_buffer[pos-1])==1)&&(is_num_sumbol(sub_buffer[pos+1])==1))
+  if ((is_num_sumbol(sub_buffer[pos-1]) == 1) && (is_num_sumbol(sub_buffer[pos+1]) == 1))
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    y=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=x-y;
-    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE];
+    y = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = x - y;
+    numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE] = z;
     
     cut_from_str(&sub_buffer[0],pos,2);
     sub_buffer_length=sub_buffer_length-2;
     work_buffer_num_count--;
     
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_multiply(uint8_t pos)
 {
-  if ((is_num_sumbol(sub_buffer[pos-1])==1)&&(is_num_sumbol(sub_buffer[pos+1])==1))
+  if ((is_num_sumbol(sub_buffer[pos-1]) == 1) && (is_num_sumbol(sub_buffer[pos+1]) == 1))
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    y=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=x*y;
-    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE];
+    y = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = x * y;
+    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE] = z;
     
     cut_from_str(&sub_buffer[0],pos,2);
     sub_buffer_length=sub_buffer_length-2;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_div(uint8_t pos)
 {
-  if ((is_num_sumbol(sub_buffer[pos-1])==1)&&(is_num_sumbol(sub_buffer[pos+1])==1))
+  if ((is_num_sumbol(sub_buffer[pos-1]) == 1) && (is_num_sumbol(sub_buffer[pos+1]) == 1))
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    y=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    if (y==0) {errors=3;return;}
-    z=x/y;
+    x = numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE];
+    y = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    if (y == 0) 
+    {
+      errors = CACL_ERR_ZERO_DIV;
+      return;
+    }
+    z = x / y;
     numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
     
     cut_from_str(&sub_buffer[0],pos,2);
     sub_buffer_length=sub_buffer_length-2;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_pow(uint8_t pos)
 {
-  if ((is_num_sumbol(sub_buffer[pos-1])==1)&&(is_num_sumbol(sub_buffer[pos+1])==1))
+  if ((is_num_sumbol(sub_buffer[pos-1]) == 1) && (is_num_sumbol(sub_buffer[pos+1]) == 1))
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    y=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=pow(x,y);
-    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
+    y = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
+    z = pow(x,y);
+    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE] = z;
     
     cut_from_str(&sub_buffer[0],pos,2);
     sub_buffer_length=sub_buffer_length-2;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_dbl(uint8_t pos)//x^2
 {
-  if (is_num_sumbol(sub_buffer[pos-1])==1)
+  if (is_num_sumbol(sub_buffer[pos-1]) == 1)
   {
-    x=numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE];
-    z=pow(x,2);      
-    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos-1] - REPLACE_SYMB_CODE];
+    z = pow(x,2);      
+    numbers[sub_buffer[pos-1]-REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_sin(uint8_t pos)
 {
   if (is_num_sumbol(sub_buffer[pos+1])==1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=sin(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = sin(x);      
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_cos(uint8_t pos)
 {
-  if (is_num_sumbol(sub_buffer[pos+1])==1)
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=cos(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
+    z = cos(x);      
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_tg(uint8_t pos)
 {
-  if (is_num_sumbol(sub_buffer[pos+1])==1)
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=tan(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = tan(x);      
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_sqrt(uint8_t pos)
 {
   if (is_num_sumbol(sub_buffer[pos+1])==1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    if (x<0){errors=6;return;}
-    z=sqrt(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
+    if (x < 0)
+    {
+      errors = CACL_ERR_ROOT;
+      return;
+    }
+    z = sqrt(x);
+    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_exp(uint8_t pos)
 {
   if (is_num_sumbol(sub_buffer[pos+1])==1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    z=exp(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
+    z = exp(x);      
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
 void solve_ln(uint8_t pos)
 {
-  if (is_num_sumbol(sub_buffer[pos+1])==1)
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
   {
-    x=numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    if (x<0){errors=7;return;}
-    z=log(x);      
-    numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE]=z;
+    x = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
+    if (x < 0)
+    {
+      errors = CACL_ERR_LOG; 
+      return;
+    }
+    z = log(x);     
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
     cut_from_str(&sub_buffer[0],pos,1);
     sub_buffer_length=sub_buffer_length-1;
     work_buffer_num_count--;
   }
-  else {errors=1;}
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
 }
 
-
-
-
-
-
-
+//возвращает 1 если символ относится к числам (А Б В ...)
 uint8_t is_num_sumbol(uint8_t chr)
 {
-  //возвращает 1 если символ относится к числам (А Б В ...)
-  if ((chr>(REPLACE_SYMB_CODE-1))&&(chr<212)){return 1;}
-  return 0;
+  if ((chr > (REPLACE_SYMB_CODE-1)) && (chr < 212))
+    return 1;
+  else
+    return 0;
 }
 
+//возвращает 1 если символ относится к символам регистров памяти (A B C D)
 uint8_t is_mem_sumbol(uint8_t chr)
 {
-  //возвращает 1 если символ относится к символам регистров памяти (A B C D)
-  if ((chr>64)&&(chr<69)){return 1;}
-  return 0;
-}
-
-
-
-uint8_t is_x_level_func(uint8_t chr,uint8_t x)
-{
-uint8_t tmp=0;  
-  switch (x)
-  {
-  case 5: tmp=is_5_level_func(chr);break;
-  case 4: tmp=is_4_level_func(chr);break;
-  case 3: tmp=is_3_level_func(chr);break;
-  case 2: tmp=is_2_level_func(chr);break;
-  case 1: tmp=is_1_level_func(chr);break;
-  }
-return tmp; 
-}
-
-
-
-
-uint8_t is_5_level_func(uint8_t chr)
-{
-  //возвращает 1 если + или -
-  if ((chr==43)||(chr==45)){return 1;}
-  return 0;
-}
-
-uint8_t is_4_level_func(uint8_t chr)
-{
-  //возвращает 1 если * или /
-  if ((chr==42)||(chr==47)){return 1;}
-  return 0;
-}
-
-uint8_t is_3_level_func(uint8_t chr)
-{
-  //возвращает 1 если ^
-  if (chr==94){return 1;}
-  return 0;
-}
-
-uint8_t is_2_level_func(uint8_t chr)
-{
-  //возвращает 1 если ^2
-  if (chr==250){return 1;}
-  return 0;
-}
-
-uint8_t is_1_level_func(uint8_t chr)
-{
-  //возвращает 1 если c или s или t или sqrt или l или x
-  if ((chr==115)||(chr==99)||(chr==116)||(chr==SYMB_SQRT_CODE)||(chr==108)||(chr==120))
+  if ((chr>64)&&(chr<69))
     return 1;
-  return 0;
+  else
+    return 0;
 }
 
 
+//Check if the level of function (chr) equals to x
+uint8_t is_x_level_func(uint8_t chr, uint8_t x)
+{
+  uint8_t funct_lvl = return_function_level(chr);
+  if (funct_lvl == x)
+    return 1;
+  else
+    return 0;
+}
 
+//Return level on function (function is presented by it's char code)
+uint8_t return_function_level(uint8_t funct_code)
+{
+  switch (funct_code)
+  {
+    case '+': return 5;
+    case '-': return 5;
+    case '*': return 4;
+    case '/': return 4;
+    case '^': return 3;
+    case 250: return 2;
+    case 115: return 1;
+    case 116: return 1;
+    case 108: return 1;
+    case 120: return 1;
+    case 99:  return 1;
+    case SYMB_SQRT_CODE:  return 1;
+    default: return 0;
+  }
+}
+
+
+//проверяет, чтобы количество скобок было четным и определет макс уровень скобок
 void bracket_anlyse(void)
 {
-  //проверяет, чтобы количество скобок было четным и определет макс уровень скобок
-  
   uint8_t i;
-  uint8_t bracket_cnt=0;
-  max_bracket_levell=0;
+  uint8_t bracket_cnt = 0;
+  max_bracket_levell = 0;
   
   for (i=0; i<work_buffer_length; i++)
   {
@@ -580,5 +613,5 @@ void bracket_anlyse(void)
       max_bracket_levell = bracket_cnt;
   }
   if (bracket_cnt != 0)
-    errors=5;//нечетное число скобок
+    errors = CACL_ERR_BRACKETS;//нечетное число скобок
 }

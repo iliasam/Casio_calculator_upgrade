@@ -5,6 +5,7 @@
 #include "formula_handling.h"
 #include "stm32f10x_rtc.h"
 #include "lcd_worker.h"
+#include "str_math.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
@@ -18,7 +19,7 @@ extern char formula_text[FORMULA_MAX_LENGTH];
 extern uint16_t formula_cursor_position;
 extern uint16_t formula_current_length;
 
-extern double answer;//tmp
+extern CalcAnswerType calc_result;
 
 uint8_t display_input_font = FONT_SIZE_8;
 
@@ -34,8 +35,11 @@ void display_draw_input_handler(void)
     //draw_formula_input_cursor();
     draw_cur_oneline_formula();
     
-    sprintf(str,"> %.10g", answer);
+    sprintf(str,"> %.10g", calc_result.Answer);
     lcd_draw_string(str, 0, 2*display_input_font, display_input_font, 0);
+    
+    sprintf(str,"err: %d", (uint8_t)calc_result.Error);
+    lcd_draw_string(str, 0, 3*display_input_font, display_input_font, 0);
   }
 }
 
@@ -115,17 +119,17 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
     {
       case CURSOR_INPUT_BASIC: 
       {
-        lcd_draw_char(60, x, y, font_size, 0);
+        lcd_draw_char('<', x, y, font_size, 0);
         break;
       }
       case CURSOR_INPUT_ALPHA: 
       {
-        lcd_draw_char(97, x, y, font_size, LCD_INVERTED_FLAG);//97 - a
+        lcd_draw_char('a', x, y, font_size, LCD_INVERTED_FLAG);//97 - a
         break;
       }
       case CURSOR_INPUT_SHIFT: 
       {
-        lcd_draw_char(115, x, y, font_size, LCD_INVERTED_FLAG);//115 - s
+        lcd_draw_char('s', x, y, font_size, LCD_INVERTED_FLAG);//115 - s
         break;
       }
       default: break;
