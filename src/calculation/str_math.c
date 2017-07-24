@@ -10,16 +10,17 @@
 //All number are replaced by symbols started from this code
 //2+2 -> 192+193
 #define REPLACE_SYMB_CODE       192
+#define MAX_FORMULA_LENGTH      50
 
 
 #include "str_operate.h"//работа со строками
 #include "math.h"
 #include <ctype.h>
 
-uint8_t work_buffer[50];//буфер, в котором находится обрабатываемая строка
+uint8_t work_buffer[MAX_FORMULA_LENGTH];//буфер, в котором находится обрабатываемая строка
 uint8_t work_buffer_length=0;//количество символов в буфере
 
-uint8_t sub_buffer[50];//буфер, в котором находится обрабатываемая подстрока
+uint8_t sub_buffer[MAX_FORMULA_LENGTH];//буфер, в котором находится обрабатываемая подстрока
 uint8_t sub_buffer_length=0;//количество символов в буфере подстроки
 
 double numbers[30];//числа, полученные из исходной строки
@@ -90,18 +91,17 @@ void replace_functions(void)
     if ((work_buffer[i]==108)&&(work_buffer[i+1]==110)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//ln
     if ((work_buffer[i]==101)&&(work_buffer[i+1]==120)){replace_by_char(&work_buffer[0],i,3,120);work_buffer_length=work_buffer_length-2;}//exp to x иначе e будет воспринято как E
     i++;  
-  } while (i<=work_buffer_length-1);
+  } 
+  while (i<=work_buffer_length-1);
 }
 
 
-
+//ищет в рабочем буфере(строке) числа
+//преобразовывает их в double, помещает их в массив numbers[]
+//и заменяет их в массиве символами чисел(А,Б,В,Г.....)
+//также заменяет символы регистров памяти (A B C D)
 void find_numbers(void)
 {
-  //ищет в рабочем буфере(строке) числа
-  //преобразовывает их в double, помещает их в массив numbers[]
-  //и заменяет их в массиве символами чисел(А,Б,В,Г.....)
-  //также заменяет символы регистров памяти (A B C D)
-  
   uint8_t i=0;
   uint8_t chr=0;
   char *end_ptr;//указатель на конец числа
@@ -120,11 +120,11 @@ void find_numbers(void)
       {
         chr=work_buffer[i];
         i++;
-      } while ((isdigit(chr)==0)&&(i<=work_buffer_length-1)&&(is_mem_sumbol(chr)==0)&&(chr!=3));//ищем цифру, симол памяти или пи
+      } while ((isdigit(chr)==0)&&(i<=work_buffer_length-1)&&(is_mem_sumbol(chr)==0)&&(chr!=SYMB_PI_CODE));//ищем цифру, симол памяти или пи
       
-      if (chr==3)//если нашлось пи
+      if (chr == SYMB_PI_CODE)//если нашлось пи
       {
-        numbers[work_buffer_num_count]=3.141592654;
+        numbers[work_buffer_num_count] = 3.141592654;
         work_buffer_num_count++;
         replace_by_char(&work_buffer[0],i-1,1,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);
         if (is_num_sumbol(work_buffer[i-2])!=0)//если перед пи стоит число
@@ -133,10 +133,10 @@ void find_numbers(void)
           text_insert_string((char*)work_buffer, (char*)&tmp, i-1, 1);
           work_buffer_length++;
         }
-        found=1;
+        found = 1;
       }
       
-      if (is_mem_sumbol(chr)!=0)//если нашелся символ регистра
+      if (is_mem_sumbol(chr)!= 0)//если нашелся символ регистра
       {
         numbers[work_buffer_num_count]=memory_num[chr-65];
         work_buffer_num_count++;
@@ -144,7 +144,7 @@ void find_numbers(void)
         found=1;
       }
   
-      if (isdigit(chr)!=0)//проверка на случай если буфер закончился а цифра не нашлась
+      if (isdigit(chr)!=0)//проверка на случай если буфер закончился, а цифра не нашлась
       {
         numbers[work_buffer_num_count]=strtod((const char *)&work_buffer[i-1],&end_ptr);
         work_buffer_num_count++;
@@ -164,7 +164,8 @@ void find_numbers(void)
         found=1;
       }//end if
 
-    } while(found==1);//до тех пор, пока что-то находится
+    } 
+  while (found == 1);//до тех пор, пока что-то находится
 }
 
 
@@ -216,20 +217,20 @@ void solve_sub_buffer(void)
           i++;
           if (is_x_level_func(chr,level)==1){solve_func(i-1);found=1;}//если нашлась функция, вычислить ее
         } while ((i<=sub_buffer_length-1)&&(found==0)&&(errors==0));
-    }while ((found==1)&&(errors==0));
+    } while ((found==1)&&(errors==0));
     level++;//если во всей подстроке функций такого уровня больше нет
   }while ((level<6)&&(errors==0));
   
   if (errors!= 0)
     return;
   
-  if (sub_buffer_length>1)
+  if (sub_buffer_length > 1)
   {
     errors = CACL_ERR_BAD_FORMULA2;
     return;
   }
   
-  if (is_num_sumbol(sub_buffer[0])==1) 
+  if (is_num_sumbol(sub_buffer[0]) == 1) 
     answer = numbers[sub_buffer[0]-REPLACE_SYMB_CODE];
   else 
   {
@@ -244,47 +245,51 @@ void solve_work_buffer(void)
 {
   uint8_t i;
   uint8_t chr;
-
   
-  uint8_t sub_begin=0;//начало подстроки
-  uint8_t sub_end=0;//конец полстроки
-  uint8_t bracket_cnt=0;
-
-    do
+  uint8_t sub_begin = 0;//начало подстроки
+  uint8_t sub_end = 0;//конец полстроки
+  uint8_t bracket_cnt = 0;
+  
+  do
+  {
+    i = 0;
+    bracket_cnt=0;
+    do//проходит символы строки в происках скобок
     {
-        i=0;
-        bracket_cnt=0;
-        do//проходит символы строки в происках скобок
+      chr = work_buffer[i];
+      i++;
+      if (chr=='(')
+        bracket_cnt++;
+      if (chr==')')
+        bracket_cnt--;
+      
+      if (bracket_cnt == max_bracket_levell)//ищем скобки максимаьного уровня
+      {
+        sub_begin = i;
+        while (work_buffer[i]!=')')
+          i++;//ищем закрывающую скобку
+        sub_end = i;
+        fill_sub_buffer(&work_buffer[sub_begin],sub_end-sub_begin);
+        solve_sub_buffer();
+        
+        if (errors==0)
         {
-          chr=work_buffer[i];
-          i++;
-          if (chr=='('){bracket_cnt++;}
-          if (chr==')'){bracket_cnt--;}
-          if (bracket_cnt==max_bracket_levell)//ищем скобки максимаьного уровня
-          {
-            sub_begin=i;
-            while (work_buffer[i]!=')'){i++;}//ищем закрывающую скобку
-            sub_end=i;
-            fill_sub_buffer(&work_buffer[sub_begin],sub_end-sub_begin);
-            solve_sub_buffer();
-            if (errors==0)
-            {
-              replace_by_char(&work_buffer[0],sub_begin-1,(uint8_t)(sub_end-sub_begin+2),sub_buffer[0]);
-              work_buffer_length=work_buffer_length-(sub_end-sub_begin+1);
-              //found=1;
-              i=sub_begin;
-              bracket_cnt--;
-            }
-          }
-         
-        } while ((i<=work_buffer_length-1)&&(errors==0));
-        max_bracket_levell--;
-    }while ((max_bracket_levell>0)&&(errors==0));
-    
+          replace_by_char(&work_buffer[0],sub_begin-1,(uint8_t)(sub_end-sub_begin+2),sub_buffer[0]);
+          work_buffer_length=work_buffer_length-(sub_end-sub_begin+1);
+          //found=1;
+          i = sub_begin;
+          bracket_cnt--;
+        }
+      }//end of if
+    } while ((i <= work_buffer_length-1) && (errors == 0));
+    max_bracket_levell--;
+  }
+  while ((max_bracket_levell > 0) && (errors == 0));
+  
   if (errors!= CACL_ERR_NO)
     return;
-    
-  if (work_buffer_length>1)//если скобок нет
+  
+  if (work_buffer_length > 1)//если скобок нет
   {
     fill_sub_buffer(&work_buffer[0],work_buffer_length);
     solve_sub_buffer();
@@ -293,17 +298,17 @@ void solve_work_buffer(void)
       answer = numbers[sub_buffer[0]-REPLACE_SYMB_CODE];
     else 
     {
-      errors=CACL_ERR_BAD_FORMULA3;
+      errors = CACL_ERR_BAD_FORMULA3;
       return;
     }
   }
   else
   {
-    if (is_num_sumbol(work_buffer[0])==1) 
+    if (is_num_sumbol(work_buffer[0]) == 1) 
       answer = numbers[work_buffer[0]-REPLACE_SYMB_CODE];
     else 
     {
-      errors=CACL_ERR_BAD_FORMULA3;
+      errors = CACL_ERR_BAD_FORMULA3;
       return;
     }
   }
@@ -312,27 +317,24 @@ void solve_work_buffer(void)
 
 
 
-
+//вычисяет функцию расположенную по указанной позиции
 void solve_func(uint8_t pos)
 {
-//вычисяет функцию расположенную по указанной позиции
-
   switch (sub_buffer[pos])
   {
-  case '+':  solve_plus(pos);break;
-  case '-':  solve_minus(pos);break;
-  case '*':  solve_multiply(pos);break;
-  case '^':  solve_pow(pos);break;
-  case 250: solve_dbl(pos);break;
-  case '/':  solve_div(pos);break;
-  case 115: solve_sin(pos);break;
-  case 99:  solve_cos(pos);break;
-  case 116: solve_tg(pos);break;
-  case SYMB_SQRT_CODE:   solve_sqrt(pos);break;
-  case 108: solve_ln(pos);break;
-  case 120: solve_exp(pos);break;
-  default: break;
-    
+    case '+':  solve_plus(pos);break;
+    case '-':  solve_minus(pos);break;
+    case '*':  solve_multiply(pos);break;
+    case '^':  solve_pow(pos);break;
+    case SYMB_SQUARE_CODE: solve_dbl(pos);break;
+    case '/':  solve_div(pos);break;
+    case 115: solve_sin(pos);break;
+    case 99:  solve_cos(pos);break;
+    case 116: solve_tg(pos);break;
+    case SYMB_SQRT_CODE:   solve_sqrt(pos);break;
+    case 108: solve_ln(pos);break;
+    case 120: solve_exp(pos);break;
+    default: break;
   }
 }
 
@@ -584,7 +586,7 @@ uint8_t return_function_level(uint8_t funct_code)
     case '*': return 4;
     case '/': return 4;
     case '^': return 3;
-    case 250: return 2;
+    case SYMB_SQUARE_CODE: return 3;
     case 115: return 1;
     case 116: return 1;
     case 108: return 1;
