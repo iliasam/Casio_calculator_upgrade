@@ -84,16 +84,22 @@ void replace_functions(void)
   //обработчик работает с функциями-знаками (функция обозначается одним знаком)
   uint8_t i=0;
   do
-  {
-    if ((work_buffer[i]==115)&&(work_buffer[i+1]==105)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//sin
-    if ((work_buffer[i]==99)&&(work_buffer[i+1]==111)){cut_from_str(&work_buffer[0],i+1,2);work_buffer_length=work_buffer_length-2;}//cos
-    if ((work_buffer[i]==116)&&(work_buffer[i+1]==103)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//tg
-    if ((work_buffer[i]==108)&&(work_buffer[i+1]==110)){cut_from_str(&work_buffer[0],i+1,1);work_buffer_length=work_buffer_length-1;}//ln
-    if ((work_buffer[i]==101)&&(work_buffer[i+1]==120)){replace_by_char(&work_buffer[0],i,3,120);work_buffer_length=work_buffer_length-2;}//exp to x иначе e будет воспринято как E
+  {    
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "sin", (char)SYMB_SIN_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "cos", (char)SYMB_COS_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "tg",  (char)SYMB_TAN_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "ln",  (char)SYMB_LN_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "log", (char)SYMB_LOG_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "exp", (char)SYMB_EXP_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "asin",(char)SYMB_ASIN_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "acos",(char)SYMB_ACOS_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "atg", (char)SYMB_ATAN_CODE);
     i++;  
   } 
-  while (i<=work_buffer_length-1);
+  while (i<=work_buffer_length-2);
 }
+
+
 
 
 //ищет в рабочем буфере(строке) числа
@@ -167,9 +173,6 @@ void find_numbers(void)
     } 
   while (found == 1);//до тех пор, пока что-то находится
 }
-
-
-
 
 
 void fill_work_buffer(uint8_t *txt, uint8_t length)
@@ -328,12 +331,12 @@ void solve_func(uint8_t pos)
     case '^':  solve_pow(pos);break;
     case SYMB_SQUARE_CODE: solve_dbl(pos);break;
     case '/':  solve_div(pos);break;
-    case 115: solve_sin(pos);break;
-    case 99:  solve_cos(pos);break;
-    case 116: solve_tg(pos);break;
+    case SYMB_SIN_CODE: solve_sin(pos);break;
+    case SYMB_COS_CODE:  solve_cos(pos);break;
+    case SYMB_TAN_CODE: solve_tg(pos);break;
     case SYMB_SQRT_CODE:   solve_sqrt(pos);break;
-    case 108: solve_ln(pos);break;
-    case 120: solve_exp(pos);break;
+    case SYMB_LN_CODE: solve_ln(pos);break;
+    case SYMB_EXP_CODE: solve_exp(pos);break;
     default: break;
   }
 }
@@ -586,13 +589,13 @@ uint8_t return_function_level(uint8_t funct_code)
     case '*': return 4;
     case '/': return 4;
     case '^': return 3;
-    case SYMB_SQUARE_CODE: return 3;
-    case 115: return 1;
-    case 116: return 1;
-    case 108: return 1;
-    case 120: return 1;
-    case 99:  return 1;
-    case SYMB_SQRT_CODE:  return 1;
+    case SYMB_SQUARE_CODE:      return 3;
+    case SYMB_SIN_CODE:         return 1;
+    case SYMB_TAN_CODE:         return 1;
+    case SYMB_LN_CODE:          return 1;
+    case SYMB_EXP_CODE:         return 1;
+    case SYMB_COS_CODE:         return 1;
+    case SYMB_SQRT_CODE:        return 1;
     default: return 0;
   }
 }
