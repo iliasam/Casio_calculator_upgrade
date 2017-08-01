@@ -11,6 +11,7 @@ typedef enum
   CACL_ERR_BAD_FORMULA3,//первый символ в строке - не числовой? (4)
   CACL_ERR_LOG,//ln(-1)
   CACL_ERR_ROOT,//sqrt(-1)
+  CACL_ERR_TRIGON,//asin(x), where x<-1 or x>1
 } CalcErrorType;
 
 typedef struct
@@ -52,9 +53,14 @@ void solve_dbl(uint8_t pos);//x^2
 void solve_sin(uint8_t pos);
 void solve_cos(uint8_t pos);
 void solve_tg(uint8_t pos);
+void solve_asin(uint8_t pos);
+void solve_acos(uint8_t pos);
+void solve_atan(uint8_t pos);
+
 void solve_sqrt(uint8_t pos);
 
 void solve_ln(uint8_t pos);
+void solve_log(uint8_t pos);
 void solve_exp(uint8_t pos);
 
 

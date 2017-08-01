@@ -84,16 +84,18 @@ void replace_functions(void)
   //обработчик работает с функциями-знаками (функция обозначается одним знаком)
   uint8_t i=0;
   do
-  {    
+  { 
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "atg", (char)SYMB_ATAN_CODE);//this texts contain parts of texts loer so they must be called earlier
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "asin",(char)SYMB_ASIN_CODE);
+    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "acos",(char)SYMB_ACOS_CODE);
+    
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "sin", (char)SYMB_SIN_CODE);
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "cos", (char)SYMB_COS_CODE);
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "tg",  (char)SYMB_TAN_CODE);
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "ln",  (char)SYMB_LN_CODE);
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "log", (char)SYMB_LOG_CODE);
     work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "exp", (char)SYMB_EXP_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "asin",(char)SYMB_ASIN_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "acos",(char)SYMB_ACOS_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "atg", (char)SYMB_ATAN_CODE);
+    
     i++;  
   } 
   while (i<=work_buffer_length-2);
@@ -325,23 +327,30 @@ void solve_func(uint8_t pos)
 {
   switch (sub_buffer[pos])
   {
-    case '+':  solve_plus(pos);break;
-    case '-':  solve_minus(pos);break;
-    case '*':  solve_multiply(pos);break;
-    case '^':  solve_pow(pos);break;
-    case SYMB_SQUARE_CODE: solve_dbl(pos);break;
-    case '/':  solve_div(pos);break;
-    case SYMB_SIN_CODE: solve_sin(pos);break;
-    case SYMB_COS_CODE:  solve_cos(pos);break;
-    case SYMB_TAN_CODE: solve_tg(pos);break;
-    case SYMB_SQRT_CODE:   solve_sqrt(pos);break;
-    case SYMB_LN_CODE: solve_ln(pos);break;
-    case SYMB_EXP_CODE: solve_exp(pos);break;
+    case '+':   solve_plus(pos);break;
+    case '-':   solve_minus(pos);break;
+    case '*':   solve_multiply(pos);break;
+    case '^':   solve_pow(pos);break;
+    case '/':   solve_div(pos); break;
+    case SYMB_SQUARE_CODE:      solve_dbl(pos); break;
+    case SYMB_SIN_CODE:         solve_sin(pos); break;
+    case SYMB_COS_CODE:         solve_cos(pos); break;
+    case SYMB_TAN_CODE:         solve_tg(pos); break;
+    case SYMB_ASIN_CODE:        solve_asin(pos); break;
+    case SYMB_ACOS_CODE:        solve_acos(pos); break;
+    case SYMB_ATAN_CODE:        solve_atan(pos); break;
+    case SYMB_SQRT_CODE:        solve_sqrt(pos); break;
+    case SYMB_LN_CODE:          solve_ln(pos); break;
+    case SYMB_LOG_CODE:         solve_log(pos); break;
+    case SYMB_EXP_CODE:         solve_exp(pos); break;
     default: break;
   }
 }
 
-
+//************************************************************************************
+//Functions below try to calculate some mathematical functions, that must be present at "pos" in "sub_buffer"
+//All this mathematical functions cn work only with coded numbers like "sin('CODED_NUMBER')" 'CODED_NUMBER' - single_char (>=REPLACE_SYMB_CODE)
+//No brakets allowed
 
 void solve_plus(uint8_t pos)
 {
@@ -495,6 +504,64 @@ void solve_tg(uint8_t pos)
     errors = CACL_ERR_NO_ARGUMENT;
 }
 
+//argument in radians
+void solve_asin(uint8_t pos)
+{
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
+  {
+    x = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    if ((x < -1.00000) || (x > 1.00000))
+    {
+      errors = CACL_ERR_TRIGON;
+      return;
+    }
+    z = asin(x);   
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
+    cut_from_str(&sub_buffer[0], pos, 1);
+    sub_buffer_length = sub_buffer_length - 1;
+    work_buffer_num_count--;
+  }
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
+}
+
+//argument in radians
+void solve_acos(uint8_t pos)
+{
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
+  {
+    x = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    if ((x < -1.00000) || (x > 1.00000))
+    {
+      errors = CACL_ERR_TRIGON;
+      return;
+    }
+    z = acos(x);
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
+    cut_from_str(&sub_buffer[0], pos, 1);
+    sub_buffer_length = sub_buffer_length - 1;
+    work_buffer_num_count--;
+  }
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
+}
+
+//argument in radians
+void solve_atan(uint8_t pos)
+{
+  if (is_num_sumbol(sub_buffer[pos+1]) == 1)
+  {
+    x = numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE];
+    z = atan(x);
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
+    cut_from_str(&sub_buffer[0], pos, 1);
+    sub_buffer_length = sub_buffer_length - 1;
+    work_buffer_num_count--;
+  }
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
+}
+
 void solve_sqrt(uint8_t pos)
 {
   if (is_num_sumbol(sub_buffer[pos+1])==1)
@@ -550,6 +617,27 @@ void solve_ln(uint8_t pos)
     errors = CACL_ERR_NO_ARGUMENT;
 }
 
+//log10
+void solve_log(uint8_t pos)
+{
+  if (is_num_sumbol(sub_buffer[pos + 1]) == 1)
+  {
+    x = numbers[sub_buffer[pos + 1] - REPLACE_SYMB_CODE];
+    if (x < 0)
+    {
+      errors = CACL_ERR_LOG;
+      return;
+    }
+    z = log10(x);
+    numbers[sub_buffer[pos+1] - REPLACE_SYMB_CODE] = z;
+    cut_from_str(&sub_buffer[0], pos, 1);
+    sub_buffer_length = sub_buffer_length - 1;
+    work_buffer_num_count--;
+  }
+  else 
+    errors = CACL_ERR_NO_ARGUMENT;
+}
+
 //возвращает 1 если символ относится к числам (А Б В ...)
 uint8_t is_num_sumbol(uint8_t chr)
 {
@@ -591,10 +679,14 @@ uint8_t return_function_level(uint8_t funct_code)
     case '^': return 3;
     case SYMB_SQUARE_CODE:      return 3;
     case SYMB_SIN_CODE:         return 1;
-    case SYMB_TAN_CODE:         return 1;
-    case SYMB_LN_CODE:          return 1;
-    case SYMB_EXP_CODE:         return 1;
     case SYMB_COS_CODE:         return 1;
+    case SYMB_TAN_CODE:         return 1;
+    case SYMB_ASIN_CODE:        return 1;
+    case SYMB_ACOS_CODE:        return 1;
+    case SYMB_ATAN_CODE:        return 1;
+    case SYMB_LN_CODE:          return 1;
+    case SYMB_LOG_CODE:         return 1;
+    case SYMB_EXP_CODE:         return 1;
     case SYMB_SQRT_CODE:        return 1;
     default: return 0;
   }
