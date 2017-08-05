@@ -615,7 +615,7 @@ void solve_ln(uint8_t pos)
   if (is_num_sumbol(sub_buffer[pos+1]) == 1)
   {
     x = numbers[sub_buffer[pos+1]-REPLACE_SYMB_CODE];
-    if (x < 0)
+    if (x < 0.0)
     {
       errors = CACL_ERR_LOG; 
       return;
@@ -636,7 +636,7 @@ void solve_log(uint8_t pos)
   if (is_num_sumbol(sub_buffer[pos + 1]) == 1)
   {
     x = numbers[sub_buffer[pos + 1] - REPLACE_SYMB_CODE];
-    if (x < 0)
+    if (x < 0.0)
     {
       errors = CACL_ERR_LOG;
       return;

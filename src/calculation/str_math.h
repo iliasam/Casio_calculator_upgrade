@@ -1,3 +1,6 @@
+#ifndef _STR_MATH_H
+#define _STR_MATH_H
+
 #include "stdio.h"
 #include "stdint.h"
 
@@ -70,3 +73,5 @@ void solve_exp(uint8_t pos);
 void solve_func(uint8_t pos);
 
 void replace_functions(void);
+
+#endif

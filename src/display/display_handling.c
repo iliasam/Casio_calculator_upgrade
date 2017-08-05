@@ -4,8 +4,8 @@
 #include "display_handling.h"
 #include "formula_handling.h"
 #include "stm32f10x_rtc.h"
+#include "text_functions.h"
 #include "lcd_worker.h"
-#include "str_math.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
@@ -30,16 +30,20 @@ void display_draw_input_handler(void)
 {
   if (mode_state == FORMULA_INPUT)
   {
-    char str[32];
+    //char str[32];
     //lcd_draw_string(formula_text, 0, 0*display_input_font, display_input_font, 0);
     //draw_formula_input_cursor();
     draw_cur_oneline_formula();
     
+    /*
     sprintf(str,"> %.10g", calc_result.Answer);
     lcd_draw_string(str, 0, 2*display_input_font, display_input_font, 0);
     
     sprintf(str,"err: %d", (uint8_t)calc_result.Error);
     lcd_draw_string(str, 0, 3*display_input_font, display_input_font, 0);
+    */
+    draw_answer_in_line(calc_result, 2);
+    
   }
 }
 
@@ -134,5 +138,72 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
       }
       default: break;
     }
+  }
+}
+
+//Draw answer in single line
+//Нужно дожелать - отображение, или выбран инжинерный режим
+void draw_answer_in_line(CalcAnswerType result, uint16_t line)
+{
+  char str[32];
+  
+  if (result.Error == CACL_ERR_NO)//no errors
+  {
+    uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font);//maximum text width in symbols
+    
+    uint8_t length = sprintf(str,"%.10g<", calc_result.Answer);
+    if (length > max_text_lng)
+      return;//unknown error
+    
+    uint8_t add_length = max_text_lng - length;//number of symbols that must be added
+    uint8_t i;
+    for (i = 0; i < add_length; i++)
+    {
+      text_insert_string(str, " ", 0, 1);//add space char at the beginning of sring
+    }
+    
+    lcd_draw_string(str, 0, line*display_input_font, display_input_font, 0);
+  }
+  else
+  {
+    switch (calc_result.Error)
+    {
+      case CACL_ERR_BRACKETS:
+      {
+        lcd_draw_string("BRAKETS ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CACL_ERR_ZERO_DIV:
+      {
+        lcd_draw_string("DIV BY 0 ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CACL_ERR_NO_ARGUMENT:
+      {
+        lcd_draw_string("NO ARG ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CACL_ERR_LOG:
+      {
+        lcd_draw_string("LN(x<0) ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CACL_ERR_ROOT:
+      {
+        lcd_draw_string("ROOT ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CACL_ERR_TRIGON:
+      {
+        lcd_draw_string("TRIG ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+        break;
+      }
+      default:
+      {
+        sprintf(str,"ERROR: %d", (uint8_t)calc_result.Error);
+        lcd_draw_string(str, 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
+      }
+    }
+
   }
 }
