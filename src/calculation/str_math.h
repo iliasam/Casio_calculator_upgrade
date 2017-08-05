@@ -27,6 +27,9 @@ void find_numbers(void);
 void bracket_anlyse(void);
 void fill_sub_buffer(uint8_t *txt,uint8_t length);
 
+void add_new_number_to_buffer(double new_value);
+void replace_symbols_in_work_buffer(void);
+
 uint8_t is_num_sumbol(uint8_t chr);
 uint8_t is_mem_sumbol(uint8_t chr);
 

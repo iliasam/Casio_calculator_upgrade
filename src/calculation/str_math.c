@@ -23,8 +23,8 @@ uint8_t work_buffer_length=0;//количество символов в буфере
 uint8_t sub_buffer[MAX_FORMULA_LENGTH];//буфер, в котором находится обрабатываемая подстрока
 uint8_t sub_buffer_length=0;//количество символов в буфере подстроки
 
-double numbers[30];//числа, полученные из исходной строки
-uint8_t work_buffer_num_count=0;//количество чисел в буфере
+double numbers[30];//Buffer for holding numbers. This numbers are replaced by chars with codes starting from REPLACE_SYMB_CODE
+uint8_t work_buffer_num_count = 0;//Counter of numbers in "numbers" buffer
 
 double memory_num[4];//память - переменные A B C D
 
@@ -51,7 +51,8 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
   work_buffer_num_count = 0;
   errors = CACL_ERR_NO;
   
-  fill_work_buffer(txt,length);
+  fill_work_buffer(txt, length);
+  replace_symbols_in_work_buffer();
   replace_functions();
   find_numbers();//заменяет числа одиночными символами - А Б В ...
   bracket_anlyse();//проверяет четность скобок
@@ -101,6 +102,16 @@ void replace_functions(void)
   while (i<=work_buffer_length-2);
 }
 
+//Replace some symbols in "work_buffer"
+void replace_symbols_in_work_buffer(void)
+{
+  uint8_t i;
+  for (i = 0; i < work_buffer_length; i++)
+  {
+    if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
+  }
+}
+
 
 
 
@@ -111,56 +122,51 @@ void replace_functions(void)
 void find_numbers(void)
 {
   uint8_t i=0;
-  uint8_t chr=0;
+  uint8_t current_chr = 0;
   char *end_ptr;//указатель на конец числа
   
-  uint32_t str_begin;
-  uint32_t str_end;
-  
   uint16_t lng;
-  uint8_t found=0;
-  uint8_t tmp=42;//chr - "*"
+  uint8_t found = 0;//Number found flag
   do
   {   
-      found=0;
-      i=0;
+      found = 0;
+      i = 0;
+      //Do steps untill needed code would not be found
       do
       {
-        chr=work_buffer[i];
+        current_chr = work_buffer[i];
         i++;
-      } while ((isdigit(chr)==0)&&(i<=work_buffer_length-1)&&(is_mem_sumbol(chr)==0)&&(chr!=SYMB_PI_CODE));//ищем цифру, симол памяти или пи
+      } while ((isdigit(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (current_chr!=SYMB_PI_CODE) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
       
-      if (chr == SYMB_PI_CODE)//если нашлось пи
+      if (current_chr == SYMB_PI_CODE)//если нашлось пи
       {
-        numbers[work_buffer_num_count] = 3.141592654;
-        work_buffer_num_count++;
-        replace_by_char(&work_buffer[0],i-1,1,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);
-        if (is_num_sumbol(work_buffer[i-2])!=0)//если перед пи стоит число
+        add_new_number_to_buffer(3.141592654);
+        replace_by_char(&work_buffer[0], i-1, 1, (REPLACE_SYMB_CODE-1)+work_buffer_num_count);
+        if (is_num_sumbol(work_buffer[i-2])!=0)//There is a number before PI
         {
-          //add_to_str(&tmp,work_buffer,1,i-1);
-          text_insert_string((char*)work_buffer, (char*)&tmp, i-1, 1);
+          text_insert_string((char*)work_buffer, (char*)"*", i-1, 1);
           work_buffer_length++;
         }
         found = 1;
       }
       
-      if (is_mem_sumbol(chr)!= 0)//если нашелся символ регистра
+      if (is_mem_sumbol(current_chr)!= 0)//если нашелся символ регистра
       {
-        numbers[work_buffer_num_count]=memory_num[chr-65];
-        work_buffer_num_count++;
+        add_new_number_to_buffer(current_chr-65);
         replace_by_char(&work_buffer[0],i-1,1,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);
-        found=1;
+        found = 1;
       }
   
-      if (isdigit(chr)!=0)//проверка на случай если буфер закончился, а цифра не нашлась
+      //Эту функцию нужно переделать, чтобы минус проверялся в самом начале
+      if (isdigit(current_chr)!= 0)//проверка на случай если буфер закончился, а цифра не нашлась
       {
-        numbers[work_buffer_num_count]=strtod((const char *)&work_buffer[i-1],&end_ptr);
-        work_buffer_num_count++;
+        double new_value = strtod((const char *)&work_buffer[i-1],&end_ptr);
+        add_new_number_to_buffer(new_value);
   
-        str_begin = (uint32_t)&work_buffer[i-1];//2017
-        str_end = (uint32_t)end_ptr;
+        uint32_t str_begin = (uint32_t)&work_buffer[i-1];//Start of number
+        uint32_t str_end = (uint32_t)end_ptr;//End of number
         
-        lng = (uint16_t)(str_end-str_begin);//длина числа в символах
+        lng = (uint16_t)(str_end-str_begin);//Length of number in chars
         replace_by_char(&work_buffer[0],i-1,(uint8_t)lng,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);//REPLACE_SYMB_CODE - номер 'А' в ASCII
         work_buffer_length=work_buffer_length-(uint8_t)lng+1;
         if ((work_buffer[i-2]==2)&&(i>1))//проверка на минус (его код - 2)
@@ -169,11 +175,18 @@ void find_numbers(void)
           cut_chr_from_str(&work_buffer[0],i-2);//удалить минус
           work_buffer_length--;          
         }
-        found=1;
+        found = 1;
       }//end if
 
     } 
   while (found == 1);//до тех пор, пока что-то находится
+}
+
+//Add new number to the buffer of replaced numbers
+void add_new_number_to_buffer(double new_value)
+{
+  numbers[work_buffer_num_count] = new_value;
+  work_buffer_num_count++;
 }
 
 
