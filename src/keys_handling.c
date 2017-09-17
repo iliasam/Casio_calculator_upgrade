@@ -51,7 +51,6 @@ KeyTextType keys_text_array[] =
   
   {38, NULL,  "m",  NULL},
   
-  
   {43, "log()",  "p",  NULL},
   {42, "ln()",   "f",  "exp()"},
   

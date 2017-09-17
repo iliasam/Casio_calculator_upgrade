@@ -54,6 +54,7 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
   fill_work_buffer(txt, length);
   replace_symbols_in_work_buffer();
   replace_functions();
+  replace_metric_symbols();
   find_numbers();//заменяет числа одиночными символами - А Б В ...
   bracket_anlyse();//проверяет четность скобок
   if (errors!= CACL_ERR_NO)
@@ -111,6 +112,27 @@ void replace_symbols_in_work_buffer(void)
     if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
   }
 }
+
+
+//Replace metric_symbols like "m", "M", "G" to numbers "*1e-3", "*1e3", "*1e6"
+//This function MUST be calld after replace_functions() bum before find_numbers()
+void replace_metric_symbols(void)
+{
+  uint8_t i = 0;
+  do
+  {
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'm', "*1e-3");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], (char)0xB5, "*1e-6");//micro
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'n', "*1e-9");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'p', "*1e-12");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'K', "*1e3");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'M', "*1e6");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'G', "*1e9");
+    i++;  
+  } 
+  while (i < work_buffer_length);
+}
+
 
 
 

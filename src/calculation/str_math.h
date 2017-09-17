@@ -73,5 +73,6 @@ void solve_exp(uint8_t pos);
 void solve_func(uint8_t pos);
 
 void replace_functions(void);
+void replace_metric_symbols(void);
 
 #endif

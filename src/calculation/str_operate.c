@@ -2,9 +2,6 @@
 #include "text_functions.h"
 //#include <iostream>
 
-//legacy code
-
-
 void add_to_str(uint8_t *source,uint8_t *dest,uint8_t lng,uint8_t pos)
 {
   text_insert_string((char*)dest, (char*)source, pos, lng);
@@ -29,9 +26,9 @@ void replace_by_char(uint8_t *source,uint8_t pos,uint8_t lng,uint8_t chr)
   add_to_str(&chr,source,1,pos);
 }
 
-//Cheek if "substring" is present at beginning of "work_str".
+//Cheek if "work_str" contains "substring" at it's beginning.
 //If if is true, replace "substring"  by "replace_symbol"
-//Return - number of symbols that was emoved from string
+//Return - number of symbols that was removed from string
 uint8_t cheek_and_replace_substring(char *work_str, char *substring, char replace_symbol)
 {
   uint8_t substring_size = strlen(substring);
@@ -39,6 +36,21 @@ uint8_t cheek_and_replace_substring(char *work_str, char *substring, char replac
   if (strncmp(work_str, substring, substring_size) == 0)
   {
     replace_by_char((uint8_t*)work_str,0,substring_size,replace_symbol);//TODO: remove uint8_t
+    return substring_size - 1;
+  }
+  return 0;
+}
+
+//Cheek if "work_str" contains "symbol" at it's beginning.
+//If if is true, replace "symbol"  by "replace_str" string
+//Return - number of symbols that was added to string
+uint8_t cheek_and_replace_symbol(char *work_str, char symbol, char* replace_str)
+{
+  if (work_str[0] == symbol)
+  {
+    uint8_t substring_size = strlen(replace_str);//size of added string
+    text_delete_symbols((char*)work_str,  0, 1);//delete char
+    text_insert_string((char*)work_str, (char*)replace_str, 0, substring_size);
     return substring_size - 1;
   }
   return 0;
