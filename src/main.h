@@ -6,6 +6,7 @@
 #define SYMB_EXP10_CODE        0xB7 //183 dec - exp (10x)
 #define SYMB_SQUARE_CODE       0xB2 //178 dec - ^2
 #define SYMB_SQRT_CODE         0xB4 //180 dec - sqrt()
+#define SYMB_DEG_CODE          0xB0 //176 dec - deg symbol
 
 //When formula solving found some functions like "sin(..)", chars "sin" will be replaced to single char with code SYMB_SIN_CODE
 #define SYMB_SIN_CODE          128 //sin()

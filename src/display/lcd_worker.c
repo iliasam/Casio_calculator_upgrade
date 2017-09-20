@@ -152,6 +152,8 @@ void lcd_draw_char_size8(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8_
         chr = FONT8_TABLE_LENGTH - 4;
       else if (chr == SYMB_SQRT_CODE)
         chr = FONT8_TABLE_LENGTH - 5;
+      else if (chr == SYMB_DEG_CODE)
+        chr = FONT8_TABLE_LENGTH - 6;
       else
         return;
     }

@@ -39,8 +39,9 @@ KeyTextType keys_text_array[] =
   {20, NULL, "H", NULL},//save
   {21, "(", "I", NULL},
   {27, ")", "J", NULL},
+  {28, NULL, "G", NULL},
   {31, NULL,  "A",  NULL},
-  {32, NULL,  "B",  NULL},
+  {32, "\xB0",  "B",  NULL},//\xB0 - deg symbol
   {33, NULL,  "C",  NULL},
   {34, "^", "K", NULL},
   {35, NULL, "L", NULL},//root

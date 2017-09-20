@@ -110,6 +110,7 @@ void replace_symbols_in_work_buffer(void)
   for (i = 0; i < work_buffer_length; i++)
   {
     if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "*(\xB6/180)");//perlace deg symbol
   }
 }
 
