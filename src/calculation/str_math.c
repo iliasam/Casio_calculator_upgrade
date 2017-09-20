@@ -10,7 +10,7 @@
 //All number are replaced by symbols started from this code
 //2+2 -> 192+193
 #define REPLACE_SYMB_CODE       192
-#define MAX_FORMULA_LENGTH      50
+#define MAX_FORMULA_LENGTH      100
 
 
 #include "str_operate.h"//работа со строками
@@ -110,7 +110,11 @@ void replace_symbols_in_work_buffer(void)
   for (i = 0; i < work_buffer_length; i++)
   {
     if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "*(\xB6/180)");//perlace deg symbol
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "/57.295779513");//replace deg symbol
+    if (isdigit(work_buffer[i - 1]))
+      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "*3.141592654");//replace PI symbol
+    else
+      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "3.141592654");//replace PI symbol
   }
 }
 
@@ -154,24 +158,14 @@ void find_numbers(void)
   {   
       found = 0;
       i = 0;
+      
+      
       //Do steps untill needed code would not be found
       do
       {
         current_chr = work_buffer[i];
         i++;
-      } while ((isdigit(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (current_chr!=SYMB_PI_CODE) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
-      
-      if (current_chr == SYMB_PI_CODE)//если нашлось пи
-      {
-        add_new_number_to_buffer(3.141592654);
-        replace_by_char(&work_buffer[0], i-1, 1, (REPLACE_SYMB_CODE-1)+work_buffer_num_count);
-        if (is_num_sumbol(work_buffer[i-2])!=0)//There is a number before PI
-        {
-          text_insert_string((char*)work_buffer, (char*)"*", i-1, 1);
-          work_buffer_length++;
-        }
-        found = 1;
-      }
+      } while ((isdigit(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
       
       if (is_mem_sumbol(current_chr)!= 0)//если нашелся символ регистра
       {
