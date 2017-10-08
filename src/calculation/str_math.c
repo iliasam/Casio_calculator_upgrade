@@ -112,7 +112,7 @@ void replace_symbols_in_work_buffer(void)
     if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
     work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "/57.295779513");//replace deg symbol
     if (isdigit(work_buffer[i - 1]))
-      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "*3.141592654");//replace PI symbol
+      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "@3.141592654");//replace PI symbol
     else
       work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "3.141592654");//replace PI symbol
   }
@@ -126,13 +126,13 @@ void replace_metric_symbols(void)
   uint8_t i = 0;
   do
   {
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'm', "*1e-3");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], (char)0xB5, "*1e-6");//micro
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'n', "*1e-9");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'p', "*1e-12");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'K', "*1e3");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'M', "*1e6");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'G', "*1e9");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'm', "@1e-3");//@ - high priority multiply
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], (char)0xB5, "@1e-6");//micro
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'n', "@1e-9");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'p', "@1e-12");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'K', "@1e3");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'M', "@1e6");
+    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'G', "@1e9");
     i++;  
   } 
   while (i < work_buffer_length);
@@ -373,6 +373,7 @@ void solve_func(uint8_t pos)
     case SYMB_LN_CODE:          solve_ln(pos); break;
     case SYMB_LOG_CODE:         solve_log(pos); break;
     case SYMB_EXP_CODE:         solve_exp(pos); break;
+    case '@':                   solve_multiply(pos);break;//high priority muliply
     default: break;
   }
 }
@@ -708,16 +709,17 @@ uint8_t return_function_level(uint8_t funct_code)
     case '/': return 4;
     case '^': return 3;
     case SYMB_SQUARE_CODE:      return 3;
-    case SYMB_SIN_CODE:         return 1;
-    case SYMB_COS_CODE:         return 1;
-    case SYMB_TAN_CODE:         return 1;
-    case SYMB_ASIN_CODE:        return 1;
-    case SYMB_ACOS_CODE:        return 1;
-    case SYMB_ATAN_CODE:        return 1;
-    case SYMB_LN_CODE:          return 1;
-    case SYMB_LOG_CODE:         return 1;
-    case SYMB_EXP_CODE:         return 1;
-    case SYMB_SQRT_CODE:        return 1;
+    case SYMB_SIN_CODE:         return 2;
+    case SYMB_COS_CODE:         return 2;
+    case SYMB_TAN_CODE:         return 2;
+    case SYMB_ASIN_CODE:        return 2;
+    case SYMB_ACOS_CODE:        return 2;
+    case SYMB_ATAN_CODE:        return 2;
+    case SYMB_LN_CODE:          return 2;
+    case SYMB_LOG_CODE:         return 2;
+    case SYMB_EXP_CODE:         return 2;
+    case SYMB_SQRT_CODE:        return 2;
+    case '@':                   return 1;
     default: return 0;
   }
 }
