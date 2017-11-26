@@ -16,8 +16,9 @@ void callback_key_shift_formula(uint16_t key_code);
 
 void callback_key_exe_formula(uint16_t key_code);
 
+uint8_t button_pressed_lcd_flag = 0;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
+
 //Structure to hold information about keys and corresponding text
-//Some texts ("pi") will be replaced to their symbols during text input
 KeyTextType keys_text_array[] =
 {
   {1, "0", "Z", NULL},
@@ -78,6 +79,7 @@ KeyFunctionalType keys_functional_array[] =
 #define KEYS_TEXT_ARRAY_COUNT (sizeof(keys_text_array) / sizeof(KeyTextType))
 #define KEYS_FUNCT_ARRAY_COUNT (sizeof(keys_functional_array) / sizeof(KeyFunctionalType))
 
+//Processing new button pressed
 void process_key_state(uint16_t new_key_state)
 {
   static uint16_t prev_key_state = 0;
@@ -85,6 +87,8 @@ void process_key_state(uint16_t new_key_state)
   if ((new_key_state != 0) && (new_key_state != prev_key_state))
   {
     prev_key_state = new_key_state;
+    
+    button_pressed_lcd_flag = 1;
     
     if (process_functional_keys(new_key_state) > 0)
       return;//button was processed

@@ -240,6 +240,12 @@ void solve_sub_buffer(void)
   uint8_t found=0;
   uint8_t level=1;
   
+  if (sub_buffer_length == 0)
+  {
+    errors = CACL_ERR_NO_ARGUMENT; 
+    return;
+  }
+  
   do
   {
     do//проходит строку, пока попадаются функции данного уровня
@@ -281,8 +287,8 @@ void solve_work_buffer(void)
   uint8_t i;
   uint8_t chr;
   
-  uint8_t sub_begin = 0;//начало подстроки
-  uint8_t sub_end = 0;//конец полстроки
+  uint8_t sub_begin = 0;//открывающая скобка
+  uint8_t sub_end = 0;//закрывающая скобка
   uint8_t bracket_cnt = 0;
   
   do
@@ -290,32 +296,33 @@ void solve_work_buffer(void)
     i = 0;
     bracket_cnt=0;
     do//проходит символы строки в происках скобок
-    {
+    {      
       chr = work_buffer[i];
-      i++;
       if (chr=='(')
         bracket_cnt++;
       if (chr==')')
         bracket_cnt--;
       
-      if (bracket_cnt == max_bracket_levell)//ищем скобки максимаьного уровня
+      if (bracket_cnt == max_bracket_levell)//ищем скобки максимального уровня
       {
         sub_begin = i;
         while (work_buffer[i]!=')')
           i++;//ищем закрывающую скобку
         sub_end = i;
-        fill_sub_buffer(&work_buffer[sub_begin],sub_end-sub_begin);
+        fill_sub_buffer(&work_buffer[sub_begin+1], (sub_end - sub_begin - 1));
         solve_sub_buffer();
         
         if (errors==0)
         {
-          replace_by_char(&work_buffer[0],sub_begin-1,(uint8_t)(sub_end-sub_begin+2),sub_buffer[0]);
-          work_buffer_length=work_buffer_length-(sub_end-sub_begin+1);
+          replace_by_char(&work_buffer[0], sub_begin,(uint8_t)(sub_end-sub_begin+1),sub_buffer[0]);
+          work_buffer_length = work_buffer_length - (sub_end-sub_begin);
           //found=1;
           i = sub_begin;
           bracket_cnt--;
         }
       }//end of if
+      
+      i++;
     } while ((i <= work_buffer_length-1) && (errors == 0));
     max_bracket_levell--;
   }
