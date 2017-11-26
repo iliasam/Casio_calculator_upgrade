@@ -10,7 +10,7 @@
 #define LCD_HEIGHT      64
 
 #define LCD_LEFT_OFFSET         10
-#define LCD_RIGHT_OFFSET        (LCD_WIDTH - 10)
+#define LCD_RIGHT_OFFSET        (LCD_WIDTH - 5)
 
 #define FONT_SIZE_6             6//3*5
 #define FONT_SIZE_6_WIDTH       4//3*5
@@ -35,6 +35,7 @@ void lcd_set_cursor_pos(uint16_t x, uint16_t y);
 uint16_t lcd_draw_string(char *s, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags);
 uint16_t lcd_draw_string_cur(char *s, uint8_t font_size, uint8_t flags);
 uint16_t get_font_width(uint8_t font);
+void draw_caption_bar(uint8_t height);
 
 
 #endif

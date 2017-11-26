@@ -223,6 +223,19 @@ void lcd_draw_char_size11(uint8_t chr, uint16_t x_start, uint16_t y_start, uint8
   }
 }
 
+//Draw black bar
+void draw_caption_bar(uint8_t height)
+{
+  uint16_t x_pos, y_pos;
+  for (x_pos = 0; x_pos < LCD_RIGHT_OFFSET; x_pos++)
+  {
+    for (y_pos = 0; y_pos < height; y_pos++)
+    {
+        lcd_set_pixel(x_pos, y_pos);
+    }
+  }
+}
+
 uint16_t get_font_width(uint8_t font)
 {
   switch (font)

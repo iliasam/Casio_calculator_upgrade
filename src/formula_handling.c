@@ -29,10 +29,10 @@ int8_t formula_add_new_keys_symbol(uint16_t key_code)
   if (text == NULL)
     return -1;//nothing to add
   
-  uint8_t new_text_lengh = strlen(text);//length of new text to add
+  uint8_t new_text_length = strlen(text);//length of new text to add
   
   /*
-  if ((formula_current_length + new_text_lengh) > (FORMULA_MAX_LENGTH-1)) //Это не очень правильно - нужно учитывать преобразование строк
+  if ((formula_current_length + new_text_length) > (FORMULA_MAX_LENGTH-1)) //Это не очень правильно - нужно учитывать преобразование строк
     return -2;//formula is too long to add new text
   */
   return formula_add_text((char*)text);

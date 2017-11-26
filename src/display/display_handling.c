@@ -14,28 +14,33 @@
 extern ModeStateType            mode_state;
 extern FormulaInputStateType    formula_input_state;
 
-
 extern char formula_text[FORMULA_MAX_LENGTH];
 extern uint16_t formula_cursor_position;
 extern uint16_t formula_current_length;
 
 extern CalcAnswerType calc_result;
 
+AnswerType answer_type_mode = ANSWER_TYPE_NORMAL;
+
 uint8_t display_input_font = FONT_SIZE_8;
 
 char tmp_formula_buf[50];//holds temporary formula part
+
 extern uint8_t button_pressed_lcd_flag;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
 uint8_t button_pressed_lcd_local_flag = 0;
 
+MenuSelector1Type menu_selector1_data;
+
+//#############################################################################
+
+void display_handling_update_button_pressed(void);
+void leave_menu_selector1(void);
+
+//*****************************************************************************
+
 void display_draw_input_handler(void)
 {
-  if (button_pressed_lcd_flag == 1)
-  {
-    button_pressed_lcd_flag = 0;
-    button_pressed_lcd_local_flag = 1;
-  }
-  else
-    button_pressed_lcd_local_flag = 0;
+  display_handling_update_button_pressed();
   
   if (mode_state == FORMULA_INPUT)
   {
@@ -47,10 +52,18 @@ void display_draw_input_handler(void)
   }
 }
 
+void display_draw_menu_handler(void)
+{
+  if (mode_state == SELECTOR1_MENU_MODE)
+  {
+    draw_selector1_menu();
+  }
+}
+
 //Draw current formula that take single line at LCD (rolling string)
 void draw_cur_oneline_formula(void)
 {
-  uint16_t max_formula_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font);//maximum formula width in symbols
+  uint16_t max_formula_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font) + 1;//maximum formula width in symbols
   uint16_t cur_cursor_x = 0;//position in pixels
   
   if (formula_current_length < max_formula_lng)//formula is short
@@ -154,7 +167,7 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
   
   if (result.Error == CACL_ERR_NO)//no errors
   {
-    uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font);//maximum text width in symbols
+    uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font) + 1;//maximum text width in symbols
     
     uint8_t length = sprintf(str,"%.10g<", calc_result.Answer);
     if (length > max_text_lng)
@@ -210,5 +223,86 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
       }
     }
 
+  }
+}
+
+void display_handling_update_button_pressed(void)
+{
+  if (button_pressed_lcd_flag == 1)
+  {
+    button_pressed_lcd_flag = 0;
+    button_pressed_lcd_local_flag = 1;
+  }
+  else
+    button_pressed_lcd_local_flag = 0;
+}
+
+void draw_selector1_menu(void)
+{
+  uint8_t i;
+  uint8_t font_width =  get_font_width(FONT_SIZE_8);
+  draw_caption_bar(FONT_SIZE_8);
+  lcd_draw_string(menu_selector1_data.menu_caption, 0, 0*FONT_SIZE_8, FONT_SIZE_8, LCD_INVERTED_FLAG);
+  
+  for (i=0; i < menu_selector1_data.number_of_items; i++)
+  {
+    if (menu_selector1_data.selected_item == i)
+      lcd_draw_char('>', 0, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);//cursor
+    
+    lcd_draw_char(((uint8_t)'0' + i + 1), font_width, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);//print item number
+    lcd_draw_char(':', font_width*2, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);
+    
+    lcd_draw_string(menu_selector1_data.item_names[i], (font_width*3), (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);
+  }
+}
+
+void prepare_menu_selector1_for_answer_mode(void)
+{
+  static const char menu_name[] = "ANSWER TYPE:";
+  static const char item0[] = "NORMAL";
+  static const char item1[] = "ENGINEERING";
+  static const char item2[] = "SCIENCE";
+  
+  menu_selector1_data.menu_caption = (char*)menu_name;
+  menu_selector1_data.number_of_items = 3;
+  menu_selector1_data.selected_item = (uint8_t)answer_type_mode;
+  menu_selector1_data.item_names[0] = (char*)item0;
+  menu_selector1_data.item_names[1] = (char*)item1;
+  menu_selector1_data.item_names[2] = (char*)item2;
+  menu_selector1_data.menu_type     = MENU_SELECTOR1_ANSWER_MODE;
+}
+
+void menu_move_cursor_down(void)
+{
+  if (mode_state == SELECTOR1_MENU_MODE)
+  {
+    menu_selector1_data.selected_item++;
+    if (menu_selector1_data.selected_item > (menu_selector1_data.number_of_items-1))
+      menu_selector1_data.selected_item = menu_selector1_data.number_of_items-1;
+  }
+}
+
+void menu_move_cursor_up(void)
+{
+  if (mode_state == SELECTOR1_MENU_MODE)
+  {
+    if (menu_selector1_data.selected_item > 0)
+      menu_selector1_data.selected_item--;
+  }
+}
+
+//When "EXE" pressed
+void menu_leave(void)
+{
+  if (mode_state == SELECTOR1_MENU_MODE)
+    leave_menu_selector1();
+}
+
+void leave_menu_selector1(void)
+{
+  if (menu_selector1_data.menu_type == MENU_SELECTOR1_ANSWER_MODE)
+  {
+    answer_type_mode = (AnswerType)menu_selector1_data.selected_item;
+    mode_state = FORMULA_INPUT;
   }
 }

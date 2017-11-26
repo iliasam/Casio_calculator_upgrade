@@ -45,40 +45,35 @@ int main()
   Delay_ms(100);
   
   lcd_full_clear();
-  /*
-  lcd_draw_string_cur("TEST1", FONT_SIZE_8, LCD_NEW_LINE_FLAG);
-  lcd_draw_string_cur("TEST2", FONT_SIZE_8, LCD_NEW_LINE_FLAG);
-  lcd_draw_string_cur("TEST3", FONT_SIZE_6, LCD_NEW_LINE_FLAG);
-  lcd_draw_string_cur("TEST4", FONT_SIZE_11, LCD_NEW_LINE_FLAG);
-  
-  test = sin(2.0);
-  sprintf(str,"sin: %.10g", test);
-  lcd_draw_string_cur(str, FONT_SIZE_8, LCD_NEW_LINE_FLAG);
-*/
 
   while(1)			//	бесконечный цикл
   {
     lcd_clear_framebuffer();
     
     display_draw_input_handler();
-    //lcd_draw_char(182, 0, 0, FONT_SIZE_6, 0);
-    
-    //delay_ms(1000);	//	секундная задержка
-    sprintf(str,"CNT: %d\n", cnt);
-    lcd_draw_string(str, 0, FONT_SIZE_8*4, FONT_SIZE_8, 0);
-    
-    double tmp = measure_battery_voltage();
-    sprintf(str,"BAT: %.2g", tmp);
-    lcd_draw_string(str, 0, FONT_SIZE_8*5, FONT_SIZE_8, 0);
-    
-    sprintf(str,"test: %d", tmp_cnt);
-    lcd_draw_string(str, 0, FONT_SIZE_8*6, FONT_SIZE_8, 0);
+    display_draw_menu_handler();
     
     uint16_t key_state = keys_polling();
     process_key_state(key_state);
-    lcd_gotoxy(0,4);
-    sprintf(str,"key: %d    ", key_state);
-    lcd_draw_string(str, 0, FONT_SIZE_8*7, FONT_SIZE_8, 0);
+    
+    if (mode_state == FORMULA_INPUT)//debug
+    {
+      //delay_ms(1000);	//	секундная задержка
+      sprintf(str,"CNT: %d\n", cnt);
+      lcd_draw_string(str, 0, FONT_SIZE_8*4, FONT_SIZE_8, 0);
+      
+      double tmp = measure_battery_voltage();
+      sprintf(str,"BAT: %.2g", tmp);
+      lcd_draw_string(str, 0, FONT_SIZE_8*5, FONT_SIZE_8, 0);
+      
+      sprintf(str,"test: %d", tmp_cnt);
+      lcd_draw_string(str, 0, FONT_SIZE_8*6, FONT_SIZE_8, 0);
+      
+      lcd_gotoxy(0,4);
+      sprintf(str,"key: %d    ", key_state);
+      lcd_draw_string(str, 0, FONT_SIZE_8*7, FONT_SIZE_8, 0);
+    }
+    
     lcd_update();
     
    // go_to_sleep_mode();

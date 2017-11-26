@@ -1,5 +1,6 @@
 #include "keys_handling.h"
 #include "formula_handling.h"
+#include "display_handling.h"
 #include "main.h"
 #include <stddef.h>
 
@@ -11,10 +12,16 @@ void callback_key_left_formula(uint16_t key_code);
 void callback_key_right_formula(uint16_t key_code);
 void callback_key_del_formula(uint16_t key_code);
 
+void callback_key_down_menu(uint16_t key_code);
+void callback_key_up_menu(uint16_t key_code);
+
 void callback_key_alpha_formula(uint16_t key_code);
 void callback_key_shift_formula(uint16_t key_code);
 
 void callback_key_exe_formula(uint16_t key_code);
+void callback_key_exe_menu(uint16_t key_code);
+
+void callback_key_answer_menu(uint16_t key_code);
 
 uint8_t button_pressed_lcd_flag = 0;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
 
@@ -65,15 +72,16 @@ KeyTextType keys_text_array[] =
 KeyFunctionalType keys_functional_array[] = 
 {
   {25, callback_key_del_formula,   NULL},//DEL
+  {38, callback_key_answer_menu,   NULL},//ENG
   {47, callback_key_right_formula, NULL},//Right
   {48, callback_key_left_formula,  NULL},//Left
-  {52, NULL, NULL},//Down
-  {54, NULL, NULL},//Up
+  {52, NULL, callback_key_down_menu},//Down
+  {54, NULL, callback_key_up_menu},//Up
   {55, callback_key_shift_formula, NULL},//Shift
   {56, callback_key_alpha_formula, NULL},//Alpha
   {60, NULL, NULL},//MODE
-  {62, callback_key_exe_formula, NULL},//EXE
-  {64, callback_key_ac_formula, NULL},//AC
+  {62, callback_key_exe_formula,   callback_key_exe_menu},//EXE
+  {64, callback_key_ac_formula,    NULL},//AC
 };
 
 #define KEYS_TEXT_ARRAY_COUNT (sizeof(keys_text_array) / sizeof(KeyTextType))
@@ -87,11 +95,7 @@ void process_key_state(uint16_t new_key_state)
   if ((new_key_state != 0) && (new_key_state != prev_key_state))
   {
     prev_key_state = new_key_state;
-    
     button_pressed_lcd_flag = 1;
-    
-    if (process_functional_keys(new_key_state) > 0)
-      return;//button was processed
     
     if (mode_state == FORMULA_INPUT)
     {
@@ -99,9 +103,14 @@ void process_key_state(uint16_t new_key_state)
       {
         if (formula_input_state != INPUT_MODE_BASIC)
           formula_input_state = INPUT_MODE_BASIC;//switch to basic input mode after adding text
+        return;
       }
-      return;
     }
+
+    if (process_functional_keys(new_key_state) > 0)
+      return;//button was processed
+    
+
   }
   prev_key_state = new_key_state;
   
@@ -143,12 +152,13 @@ int8_t process_functional_keys(uint16_t key_code)
         keys_functional_array[i].formula_callback(key_code);
         return 1;
       }
-      if ((mode_state == MENU_MODE) && (keys_functional_array[i].formula_callback  != NULL))
+      if ((mode_state != FORMULA_INPUT) && (keys_functional_array[i].menu_callback  != NULL))
       {
         keys_functional_array[i].menu_callback(key_code);
         return 1;
       }
-    }
+      return -1;//no corresponding key found
+    }//end of for
   }
   return -1;//no corresponding key found
 }
@@ -191,7 +201,30 @@ void callback_key_shift_formula(uint16_t key_code)
     formula_input_state = INPUT_MODE_BASIC;
 }
 
+//"EXE" button
 void callback_key_exe_formula(uint16_t key_code)
 {
   solve_formula();
+}
+
+void callback_key_down_menu(uint16_t key_code)
+{
+  menu_move_cursor_down();
+}
+
+void callback_key_up_menu(uint16_t key_code)
+{
+  menu_move_cursor_up();
+}
+
+//"ENG" button - enter to menu with selection of answer type
+void callback_key_answer_menu(uint16_t key_code)
+{
+  mode_state = SELECTOR1_MENU_MODE;
+  prepare_menu_selector1_for_answer_mode();
+}
+
+void callback_key_exe_menu(uint16_t key_code)
+{
+  menu_leave();
 }

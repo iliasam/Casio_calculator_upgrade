@@ -24,7 +24,7 @@ void solve_formula(void);
 typedef enum 
 {
   FORMULA_INPUT = 0,
-  MENU_MODE,
+  SELECTOR1_MENU_MODE,
 }ModeStateType;
 
 typedef enum 
