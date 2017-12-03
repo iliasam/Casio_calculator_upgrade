@@ -82,6 +82,11 @@ int main()
   }
 }
 
+void solve_formula(void)
+{
+  calc_result = solve((uint8_t*)formula_text, formula_current_length);
+}
+
 
 int putchar(int c)
  {
@@ -101,7 +106,3 @@ void Delay_ms(uint32_t ms)
   for (; nCount!=0; nCount--);
 }
 
-void solve_formula(void)
-{
-  calc_result = solve((uint8_t*)formula_text, formula_current_length);
-}

@@ -211,8 +211,9 @@ void fill_work_buffer(uint8_t *txt, uint8_t length)
 {
   //заполняет буфер данными из внешней строки
   //dest, source
+  memset((char*)work_buffer, 0, sizeof(work_buffer));
   memcpy((char*)work_buffer, (char*)txt, length);
-  work_buffer[length+1] = 0;
+  work_buffer[length] = 0;
   work_buffer_length = length;
   
   if (length == 0) //добавляем "0" в пустую строку
@@ -227,6 +228,7 @@ void fill_sub_buffer(uint8_t *txt, uint8_t length)
 {
   //заполняет буфер данными из внешней строки
   //dest, source
+  memset((char*)sub_buffer, 0, sizeof(sub_buffer));
   memcpy((char*)sub_buffer, (char*)txt, length);
   sub_buffer[length+1] = 0;
   sub_buffer_length = length;

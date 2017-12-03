@@ -44,17 +44,17 @@ int8_t formula_add_text(char* text)
   if (text == NULL)
     return -1;//nothing to add
     
-  uint8_t new_text_lengh = strlen(text);//length of new text to add
-  if ((formula_current_length + new_text_lengh) > (FORMULA_MAX_LENGTH-1))
+  uint8_t new_text_length = strlen(text);//length of new text to add
+  if ((formula_current_length + new_text_length) > (FORMULA_MAX_LENGTH-1))
     return -2;//formula is too long to add new text
   
   if (formula_cursor_position >= (FORMULA_MAX_LENGTH-1))
     return -3;//cursor in wrong place - impossible to add text
   
-  text_insert_string(formula_text, text, formula_cursor_position, new_text_lengh);
+  text_insert_string(formula_text, text, formula_cursor_position, new_text_length);
   formula_cursor_position+= formula_calculate_cursor_jump(text);
   
-  formula_current_length+= new_text_lengh;
+  formula_current_length+= new_text_length;
   
   
   return 1;//text was added
@@ -101,17 +101,17 @@ uint16_t formula_calculate_cursor_jump(char* text)
   if (text == NULL)
     return 0;
   
-  uint8_t text_lengh = strlen(text);
-  if (text_lengh < 2)
-    return text_lengh;
+  uint8_t text_length = strlen(text);
+  if (text_length < 2)
+    return text_length;
   
   //serach for "("
   uint8_t i;
-  for (i=0; i < text_lengh; i++)
+  for (i=0; i < text_length; i++)
   {
     if (text[i] == '(')
       return i+1;
   }
-  return text_lengh;// full length of text
+  return text_length;// full length of text
 }
 

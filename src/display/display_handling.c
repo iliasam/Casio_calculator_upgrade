@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "main.h"
 
 extern ModeStateType            mode_state;
@@ -30,6 +31,8 @@ extern uint8_t button_pressed_lcd_flag;//flag to tell lcd handler that button wa
 uint8_t button_pressed_lcd_local_flag = 0;
 
 MenuSelector1Type menu_selector1_data;
+
+uint8_t generate_answer(char* ans_string, double value);
 
 //#############################################################################
 
@@ -169,7 +172,7 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
   {
     uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font) + 1;//maximum text width in symbols
     
-    uint8_t length = sprintf(str,"%.10g<", calc_result.Answer);
+    uint8_t length = generate_answer(str, calc_result.Answer);
     if (length > max_text_lng)
       return;//unknown error
     
@@ -224,6 +227,81 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
     }
 
   }
+}
+
+uint8_t generate_answer(char* ans_string, double value)
+{
+  uint8_t length = 0;
+  
+  switch (answer_type_mode)
+  {
+    case ANSWER_TYPE_NORMAL:
+    {
+      length = sprintf(ans_string,"%.10g<", value);
+      break;
+    }
+    case ANSWER_TYPE_SCINCE:
+    {
+      length = sprintf(ans_string,"%.10e<", value);
+      break;
+    }
+    case ANSWER_TYPE_ENGINEERING:
+    {
+      char symbol = ' ';
+      double div = 1.0;
+      
+      if (fabs(value) < 1e12)
+      {
+        symbol = 'G';//giga
+        div = 1e9;
+      }
+      if (fabs(value) < 1e9)
+      {
+        symbol = 'M';//mega
+        div = 1e6;
+      }
+      if (fabs(value) < 1e6)
+      {
+        symbol = 'K';//kilo
+        div = 1e3;
+      }
+      if (fabs(value) < 1e3)
+      {
+        symbol = ' ';//empty
+        div = 1.0;
+      }
+      if (fabs(value) < 1.0)
+      {
+        symbol = 'm';//mili
+        div = 1e-3;
+      }
+      if (fabs(value) < 1e-3)
+      {
+        symbol = 'u';//micro
+        div = 1e-6;
+      }
+      if (fabs(value) < 1e-6)
+      {
+        symbol = 'n';//nano
+        div = 1e-12;
+      }
+      if (fabs(value) < 1e-12)
+      {
+        symbol = 'p';//pico
+        div = 1e-15;
+      }
+      
+      length = sprintf(ans_string,"%.10g%c<", (value / div), symbol);
+      break;
+    }
+    default: break;
+    
+    
+  }
+
+  
+  
+  return length;
 }
 
 void display_handling_update_button_pressed(void)
