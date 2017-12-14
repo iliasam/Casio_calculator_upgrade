@@ -35,6 +35,7 @@ void replace_symbols_in_work_buffer(void);
 
 uint8_t is_num_sumbol(uint8_t chr);
 uint8_t is_mem_sumbol(uint8_t chr);
+uint8_t char_is_number(uint8_t chr);
 
 uint8_t is_5_level_func(uint8_t chr);
 uint8_t is_4_level_func(uint8_t chr);

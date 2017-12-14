@@ -15,7 +15,7 @@ typedef enum
 {
   ANSWER_TYPE_NORMAL = 0,
   ANSWER_TYPE_ENGINEERING,
-  ANSWER_TYPE_SCINCE,
+  ANSWER_TYPE_SCIENCE,
 }AnswerType;
 
 typedef enum

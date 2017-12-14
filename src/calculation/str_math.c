@@ -109,7 +109,12 @@ void replace_symbols_in_work_buffer(void)
   uint8_t i;
   for (i = 0; i < work_buffer_length; i++)
   {
-    if (work_buffer[i] == SYMB_EXP10_CODE) work_buffer[i] = 'e';//This needed for replacing numbers
+    if (work_buffer[i] == SYMB_EXP10_CODE) 
+    {
+      work_buffer[i] = 'e';//This needed for replacing numbers
+      if (work_buffer[i+1] == SYMB_MINUS_CODE) 
+        work_buffer[i+1] = '-'; //Convert special minus symbol to conventional minus
+    }
     work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "/57.295779513");//replace deg symbol
     if (isdigit(work_buffer[i - 1]))
       work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "@3.141592654");//replace PI symbol
@@ -158,14 +163,13 @@ void find_numbers(void)
   {   
       found = 0;
       i = 0;
-      
-      
+
       //Do steps untill needed code would not be found
       do
       {
         current_chr = work_buffer[i];
         i++;
-      } while ((isdigit(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
+      } while ((char_is_number(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
       
       if (is_mem_sumbol(current_chr)!= 0)//если нашелся символ регистра
       {
@@ -174,9 +178,11 @@ void find_numbers(void)
         found = 1;
       }
   
-      //Эту функцию нужно переделать, чтобы минус проверялся в самом начале
-      if (isdigit(current_chr)!= 0)//проверка на случай если буфер закончился, а цифра не нашлась
+      if (char_is_number(current_chr)!= 0)//проверка на случай если буфер закончился, а цифра не нашлась
       {
+        if (current_chr == SYMB_MINUS_CODE)
+          work_buffer[i-1] = '-'; //Convert special minus symbol to conventional minus
+        
         double new_value = strtod((const char *)&work_buffer[i-1],&end_ptr);
         add_new_number_to_buffer(new_value);
   
@@ -197,6 +203,15 @@ void find_numbers(void)
 
     } 
   while (found == 1);//до тех пор, пока что-то находится
+}
+
+//Check if symbol is digit or special minus
+uint8_t char_is_number(uint8_t chr)
+{
+    if (chr == SYMB_MINUS_CODE)
+      return 1;
+    
+    return isdigit(chr);
 }
 
 //Add new number to the buffer of replaced numbers

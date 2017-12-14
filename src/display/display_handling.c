@@ -240,7 +240,7 @@ uint8_t generate_answer(char* ans_string, double value)
       length = sprintf(ans_string,"%.10g<", value);
       break;
     }
-    case ANSWER_TYPE_SCINCE:
+    case ANSWER_TYPE_SCIENCE:
     {
       length = sprintf(ans_string,"%.10e<", value);
       break;
@@ -283,12 +283,12 @@ uint8_t generate_answer(char* ans_string, double value)
       if (fabs(value) < 1e-6)
       {
         symbol = 'n';//nano
-        div = 1e-12;
+        div = 1e-9;
       }
-      if (fabs(value) < 1e-12)
+      if (fabs(value) < 1e-9)
       {
         symbol = 'p';//pico
-        div = 1e-15;
+        div = 1e-12;
       }
       
       length = sprintf(ans_string,"%.10g%c<", (value / div), symbol);

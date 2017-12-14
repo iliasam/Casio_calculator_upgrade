@@ -47,7 +47,7 @@ KeyTextType keys_text_array[] =
   {20, NULL, "H", NULL},//save
   {21, "(", "I", NULL},
   {27, ")", "J", NULL},
-  {28, NULL, "G", NULL},
+  {28, "\xB8", "G", NULL},//\xB8 - minus symbol
   {31, NULL,  "A",  NULL},
   {32, "\xB0",  "B",  NULL},//\xB0 - deg symbol
   {33, NULL,  "C",  NULL},

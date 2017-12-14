@@ -7,8 +7,9 @@
 #define SYMB_SQUARE_CODE       0xB2 //178 dec - ^2
 #define SYMB_SQRT_CODE         0xB4 //180 dec - sqrt()
 #define SYMB_DEG_CODE          0xB0 //176 dec - deg symbol
+#define SYMB_MINUS_CODE        0xB8 //184 dec - minus symbol
 
-//When formula solving found some functions like "sin(..)", chars "sin" will be replaced to single char with code SYMB_SIN_CODE
+//Some functions like "sin(..)", chars "sin" will be replaced to single char with code SYMB_SIN_CODE
 #define SYMB_SIN_CODE          128 //sin()
 #define SYMB_COS_CODE          129 //cos()
 #define SYMB_TAN_CODE          130 //tg()
