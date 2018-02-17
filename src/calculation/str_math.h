@@ -37,12 +37,6 @@ uint8_t is_num_sumbol(uint8_t chr);
 uint8_t is_mem_sumbol(uint8_t chr);
 uint8_t char_is_number(uint8_t chr);
 
-uint8_t is_5_level_func(uint8_t chr);
-uint8_t is_4_level_func(uint8_t chr);
-uint8_t is_3_level_func(uint8_t chr);
-uint8_t is_2_level_func(uint8_t chr);
-uint8_t is_1_level_func(uint8_t chr);
-
 uint8_t is_x_level_func(uint8_t chr,uint8_t x);
 
 uint8_t return_function_level(uint8_t funct_code);
@@ -75,5 +69,7 @@ void solve_func(uint8_t pos);
 
 void replace_functions(void);
 void replace_metric_symbols(void);
+
+void save_answer_to_memory(void);
 
 #endif

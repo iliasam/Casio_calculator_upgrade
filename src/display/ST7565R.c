@@ -2,7 +2,6 @@
 //EASTRISING TECHNOLOGY CO,.LTD.
 // Encoding  : UTF8
 // Module    : ERC12864-1 Series
-// Lanuage   : C51 Code
 // Create    : Alex_EXE ( http://alex-exe.ru ) + iliasam
 // Source    : JAVEN
 // Date      : 2014-08-17

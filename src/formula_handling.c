@@ -105,7 +105,7 @@ uint16_t formula_calculate_cursor_jump(char* text)
   if (text_length < 2)
     return text_length;
   
-  //serach for "("
+  //search for "("
   uint8_t i;
   for (i=0; i < text_length; i++)
   {

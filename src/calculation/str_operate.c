@@ -26,10 +26,10 @@ void replace_by_char(uint8_t *source,uint8_t pos,uint8_t lng,uint8_t chr)
   add_to_str(&chr,source,1,pos);
 }
 
-//Cheek if "work_str" contains "substring" at it's beginning.
+//check if "work_str" contains "substring" at it's beginning.
 //If if is true, replace "substring"  by "replace_symbol"
 //Return - number of symbols that was removed from string
-uint8_t cheek_and_replace_substring(char *work_str, char *substring, char replace_symbol)
+uint8_t check_and_replace_substring(char *work_str, char *substring, char replace_symbol)
 {
   uint8_t substring_size = strlen(substring);
   
@@ -41,10 +41,10 @@ uint8_t cheek_and_replace_substring(char *work_str, char *substring, char replac
   return 0;
 }
 
-//Cheek if "work_str" contains "symbol" at it's beginning.
+//check if "work_str" contains "symbol" at it's beginning.
 //If if is true, replace "symbol"  by "replace_str" string
 //Return - number of symbols that was added to string
-uint8_t cheek_and_replace_symbol(char *work_str, char symbol, char* replace_str)
+uint8_t check_and_replace_symbol(char *work_str, char symbol, char* replace_str)
 {
   if (work_str[0] == symbol)
   {

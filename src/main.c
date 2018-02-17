@@ -21,7 +21,6 @@ extern volatile uint16_t tmp_cnt;
 
 ModeStateType mode_state = FORMULA_INPUT;
 FormulaInputStateType formula_input_state = INPUT_MODE_BASIC;
-//FormulaInputStateType formula_input_state = INPUT_MODE_SHIFT;
 
 extern char formula_text[FORMULA_MAX_LENGTH];
 extern uint16_t formula_current_length;
@@ -38,15 +37,15 @@ int main()
   initialize_keys_gpio();
   dwt_init();
   
-  lcd_init_pins();//инициализация выводв LCD
+  lcd_init_pins();
   Delay_ms(100);
   
-  lcd_init();			//	инициализация LCD
+  lcd_init();
   Delay_ms(100);
   
   lcd_full_clear();
 
-  while(1)			//	бесконечный цикл
+  while(1)
   {
     lcd_clear_framebuffer();
     

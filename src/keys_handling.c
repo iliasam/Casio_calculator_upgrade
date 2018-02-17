@@ -14,6 +14,8 @@ void callback_key_del_formula(uint16_t key_code);
 
 void callback_key_down_menu(uint16_t key_code);
 void callback_key_up_menu(uint16_t key_code);
+void callback_key_left_menu(uint16_t key_code);
+void callback_key_right_menu(uint16_t key_code);
 
 void callback_key_alpha_formula(uint16_t key_code);
 void callback_key_shift_formula(uint16_t key_code);
@@ -29,8 +31,8 @@ uint8_t button_pressed_lcd_flag = 0;//flag to tell lcd handler that button was p
 KeyTextType keys_text_array[] =
 {
   {1, "0", "Z", NULL},
-  {2, ".", "[", NULL},
-  {3, "\xB7", "]", "\xB6"},//\xB7 - exp is 10^x, \xB6 - pi
+  {2, ".", NULL, NULL},
+  {3, "\xB7", "\xB6", "\xB6"},//\xB7 - exp is 10^x, \xB6 - pi
   {4, "1", "U", NULL},
   {5, "2", "V", NULL},
   {6, "3", "W", NULL},
@@ -68,13 +70,13 @@ KeyTextType keys_text_array[] =
 };
 
 //Structure to hold information about functional keys
-//It hold pointers to functiona that must be called when button is pressed
+//It hold pointers to the functions that must be called when button is pressed
 KeyFunctionalType keys_functional_array[] = 
 {
   {25, callback_key_del_formula,   NULL},//DEL
   {38, callback_key_answer_menu,   NULL},//ENG
-  {47, callback_key_right_formula, NULL},//Right
-  {48, callback_key_left_formula,  NULL},//Left
+  {47, callback_key_right_formula, callback_key_right_menu},//Right
+  {48, callback_key_left_formula,  callback_key_left_menu},//Left
   {52, NULL, callback_key_down_menu},//Down
   {54, NULL, callback_key_up_menu},//Up
   {55, callback_key_shift_formula, NULL},//Shift
@@ -215,6 +217,16 @@ void callback_key_down_menu(uint16_t key_code)
 void callback_key_up_menu(uint16_t key_code)
 {
   menu_move_cursor_up();
+}
+
+void callback_key_left_menu(uint16_t key_code)
+{
+  menu_move_cursor_up();//under development
+}
+
+void callback_key_right_menu(uint16_t key_code)
+{
+  menu_move_cursor_down();//under development
 }
 
 //"ENG" button - enter to menu with selection of answer type

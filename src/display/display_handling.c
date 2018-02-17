@@ -163,7 +163,7 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
 }
 
 //Draw answer in single line
-//Нужно дожелать - отображение, или выбран инжинерный режим
+//Нужно доделать - отображение, или выбран инжинерный режим
 void draw_answer_in_line(CalcAnswerType result, uint16_t line)
 {
   char str[32];
@@ -338,8 +338,8 @@ void prepare_menu_selector1_for_answer_mode(void)
 {
   static const char menu_name[] = "ANSWER TYPE:";
   static const char item0[] = "NORMAL";
-  static const char item1[] = "ENGINEERING";
-  static const char item2[] = "SCIENCE";
+  static const char item1[] = "SCIENCE";
+  static const char item2[] = "ENGINEERING";
   
   menu_selector1_data.menu_caption = (char*)menu_name;
   menu_selector1_data.number_of_items = 3;

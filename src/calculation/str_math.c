@@ -2,46 +2,54 @@
 
 
 #include "str_math.h"
+
 #include "stdio.h"
 #include "stdint.h"
+#include <ctype.h>
+
 #include "text_functions.h"
 #include "main.h"
+#include "str_operate.h"
+#include "math.h"
 
-//All number are replaced by symbols started from this code
+
+//All numbers are replaced by symbols started from this code
 //2+2 -> 192+193
 #define REPLACE_SYMB_CODE       192
 #define MAX_FORMULA_LENGTH      100
+#define MEMORY_CELLS_SIZE       28
+#define NUMBER_CELLS_SIZE       28
 
+#define MEMORY_START_SYMB       'A'
+#define MEMORY_ANSWER_SYMB      'R'
 
-#include "str_operate.h"//работа со строками
-#include "math.h"
-#include <ctype.h>
 
 uint8_t work_buffer[MAX_FORMULA_LENGTH];//буфер, в котором находится обрабатываемая строка
-uint8_t work_buffer_length=0;//количество символов в буфере
+uint8_t work_buffer_length = 0;//количество символов в буфере
 
 uint8_t sub_buffer[MAX_FORMULA_LENGTH];//буфер, в котором находится обрабатываемая подстрока
-uint8_t sub_buffer_length=0;//количество символов в буфере подстроки
+uint8_t sub_buffer_length = 0;//количество символов в буфере подстроки
 
-double numbers[30];//Buffer for holding numbers. This numbers are replaced by chars with codes starting from REPLACE_SYMB_CODE
+double numbers[NUMBER_CELLS_SIZE];//Buffer for holding numbers. This numbers are replaced by chars with codes starting from REPLACE_SYMB_CODE
 uint8_t work_buffer_num_count = 0;//Counter of numbers in "numbers" buffer
 
-double memory_num[4];//память - переменные A B C D
+double memory_cells[MEMORY_CELLS_SIZE];//Memory - replaced by A B C D ... symbols
 
-CalcErrorType errors = CACL_ERR_NO;
-
-double x;//регистры математ операций
+//Mathematical operations registers
+double x;
 double y;
 double z;
 
 uint8_t max_bracket_levell;//максимальный уровень скобок рабочем буфере
 
+CalcErrorType errors = CACL_ERR_NO;
 double answer = 0.0;
+
+//*****************************************************************************
 
 //вычисляет значение по формуле txt, length - длина формулы в символах
 //ответ помещается в переменную answer
 //функция возврашает 0, если ошибок нет, либо код ошибки
-
 CalcAnswerType solve(uint8_t *txt,uint8_t length)
 {
   CalcAnswerType tmp_answer;
@@ -69,6 +77,7 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
     solve_sub_buffer();
     tmp_answer.Answer = answer;
     tmp_answer.Error = errors;
+    save_answer_to_memory();
     return tmp_answer;
   }
   //обработка скобок
@@ -76,7 +85,20 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
   
   tmp_answer.Answer = answer;
   tmp_answer.Error = errors;
+  
+  save_answer_to_memory();
+
   return tmp_answer;
+}
+
+//Save last answer to memory cell
+void save_answer_to_memory(void)
+{
+  uint8_t pos = MEMORY_ANSWER_SYMB - MEMORY_START_SYMB;
+  if (errors == CACL_ERR_NO)
+    memory_cells[pos] = answer;
+  else
+    memory_cells[pos] = 0.0;
 }
 
 
@@ -87,16 +109,17 @@ void replace_functions(void)
   uint8_t i=0;
   do
   { 
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "atg", (char)SYMB_ATAN_CODE);//this texts contain parts of texts loer so they must be called earlier
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "asin",(char)SYMB_ASIN_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "acos",(char)SYMB_ACOS_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "atg", (char)SYMB_ATAN_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "asin",(char)SYMB_ASIN_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "acos",(char)SYMB_ACOS_CODE);
     
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "sin", (char)SYMB_SIN_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "cos", (char)SYMB_COS_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "tg",  (char)SYMB_TAN_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "ln",  (char)SYMB_LN_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "log", (char)SYMB_LOG_CODE);
-    work_buffer_length = work_buffer_length - cheek_and_replace_substring((char*)&work_buffer[i], "exp", (char)SYMB_EXP_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "sin", (char)SYMB_SIN_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "cos", (char)SYMB_COS_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "tg",  (char)SYMB_TAN_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "ln",  (char)SYMB_LN_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "log", (char)SYMB_LOG_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "exp", (char)SYMB_EXP_CODE);
+    work_buffer_length = work_buffer_length - check_and_replace_substring((char*)&work_buffer[i], "Ans", (char)MEMORY_ANSWER_SYMB);
     
     i++;  
   } 
@@ -104,6 +127,7 @@ void replace_functions(void)
 }
 
 //Replace some symbols in "work_buffer"
+//@ - high priority multiply
 void replace_symbols_in_work_buffer(void)
 {
   uint8_t i;
@@ -115,11 +139,11 @@ void replace_symbols_in_work_buffer(void)
       if (work_buffer[i+1] == SYMB_MINUS_CODE) 
         work_buffer[i+1] = '-'; //Convert special minus symbol to conventional minus
     }
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "/57.295779513");//replace deg symbol
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], SYMB_DEG_CODE, "@1.7453292520e-2");//replace deg symbol
     if (isdigit(work_buffer[i - 1]))
-      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "@3.141592654");//replace PI symbol
+      work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "@3.141592654");//replace PI symbol
     else
-      work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "3.141592654");//replace PI symbol
+      work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], SYMB_PI_CODE, "3.141592654");//replace PI symbol
   }
 }
 
@@ -131,13 +155,13 @@ void replace_metric_symbols(void)
   uint8_t i = 0;
   do
   {
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'm', "@1e-3");//@ - high priority multiply
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], (char)0xB5, "@1e-6");//micro
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'n', "@1e-9");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'p', "@1e-12");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'K', "@1e3");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'M', "@1e6");
-    work_buffer_length = work_buffer_length + cheek_and_replace_symbol((char*)&work_buffer[i], 'G', "@1e9");
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'm', "@1e-3");//@ - high priority multiply
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], (char)0xB5, "@1e-6");//micro
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'n', "@1e-9");
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'p', "@1e-12");
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'K', "@1e3");
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'M', "@1e6");
+    work_buffer_length = work_buffer_length + check_and_replace_symbol((char*)&work_buffer[i], 'G', "@1e9");
     i++;  
   } 
   while (i < work_buffer_length);
@@ -159,6 +183,7 @@ void find_numbers(void)
   
   uint16_t lng;
   uint8_t found = 0;//Number found flag
+  
   do
   {   
       found = 0;
@@ -171,10 +196,12 @@ void find_numbers(void)
         i++;
       } while ((char_is_number(current_chr) == 0) && (is_mem_sumbol(current_chr) == 0) && (i <= work_buffer_length-1));//ищем цифру, симол памяти или пи
       
-      if (is_mem_sumbol(current_chr)!= 0)//если нашелся символ регистра
+      if (is_mem_sumbol(current_chr)!= 0)//Current symbol is memory cell
       {
-        add_new_number_to_buffer(current_chr-65);
-        replace_by_char(&work_buffer[0],i-1,1,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);
+        //Memory cell will be replaced by number
+        double mem_value = memory_cells[current_chr - MEMORY_START_SYMB];
+        add_new_number_to_buffer(mem_value);
+        replace_by_char(&work_buffer[0], i-1, 1, (REPLACE_SYMB_CODE-1) + work_buffer_num_count);
         found = 1;
       }
   
@@ -183,26 +210,19 @@ void find_numbers(void)
         if (current_chr == SYMB_MINUS_CODE)
           work_buffer[i-1] = '-'; //Convert special minus symbol to conventional minus
         
-        double new_value = strtod((const char *)&work_buffer[i-1],&end_ptr);
+        double new_value = strtod((const char *)&work_buffer[i-1], &end_ptr);
         add_new_number_to_buffer(new_value);
   
-        uint32_t str_begin = (uint32_t)&work_buffer[i-1];//Start of number
-        uint32_t str_end = (uint32_t)end_ptr;//End of number
+        uint32_t str_begin = (uint32_t)&work_buffer[i-1];//Start of the number
         
-        lng = (uint16_t)(str_end-str_begin);//Length of number in chars
-        replace_by_char(&work_buffer[0],i-1,(uint8_t)lng,(REPLACE_SYMB_CODE-1)+work_buffer_num_count);//REPLACE_SYMB_CODE - номер 'А' в ASCII
-        work_buffer_length=work_buffer_length-(uint8_t)lng+1;
-        if ((work_buffer[i-2]==2)&&(i>1))//проверка на минус (его код - 2)
-        {
-          numbers[work_buffer_num_count-1]=numbers[work_buffer_num_count-1]*(-1);
-          cut_chr_from_str(&work_buffer[0],i-2);//удалить минус
-          work_buffer_length--;          
-        }
+        lng = (uint16_t)((uint32_t)end_ptr - str_begin);//Length of number in chars
+        replace_by_char(&work_buffer[0], i-1, (uint8_t)lng, (REPLACE_SYMB_CODE-1) + work_buffer_num_count);//REPLACE_SYMB_CODE - symbol 'А' in ASCII
+        work_buffer_length = work_buffer_length - (uint8_t)lng + 1;
+        
         found = 1;
       }//end if
 
-    } 
-  while (found == 1);//до тех пор, пока что-то находится
+    } while (found == 1);
 }
 
 //Check if symbol is digit or special minus
@@ -234,7 +254,7 @@ void fill_work_buffer(uint8_t *txt, uint8_t length)
   if (length == 0) //добавляем "0" в пустую строку
   {
     work_buffer[0] = '0';
-    work_buffer[1] = 0;
+    work_buffer[1] = 0;//null termination
     work_buffer_length = 1;
   }
 }
@@ -245,7 +265,7 @@ void fill_sub_buffer(uint8_t *txt, uint8_t length)
   //dest, source
   memset((char*)sub_buffer, 0, sizeof(sub_buffer));
   memcpy((char*)sub_buffer, (char*)txt, length);
-  sub_buffer[length+1] = 0;
+  sub_buffer[length+1] = 0;//null termination
   sub_buffer_length = length;
 }
 
@@ -329,9 +349,9 @@ void solve_work_buffer(void)
         fill_sub_buffer(&work_buffer[sub_begin+1], (sub_end - sub_begin - 1));
         solve_sub_buffer();
         
-        if (errors==0)
+        if (errors == 0)
         {
-          replace_by_char(&work_buffer[0], sub_begin,(uint8_t)(sub_end-sub_begin+1),sub_buffer[0]);
+          replace_by_char(&work_buffer[0], sub_begin,(uint8_t)(sub_end-sub_begin+1), sub_buffer[0]);
           work_buffer_length = work_buffer_length - (sub_end-sub_begin);
           //found=1;
           i = sub_begin;
@@ -693,7 +713,7 @@ void solve_log(uint8_t pos)
     errors = CACL_ERR_NO_ARGUMENT;
 }
 
-//возвращает 1 если символ относится к числам (А Б В ...)
+//Return 1 if the symbol replacing number (А Б В ...)
 uint8_t is_num_sumbol(uint8_t chr)
 {
   if ((chr > (REPLACE_SYMB_CODE-1)) && (chr < 212))
@@ -702,10 +722,11 @@ uint8_t is_num_sumbol(uint8_t chr)
     return 0;
 }
 
-//возвращает 1 если символ относится к символам регистров памяти (A B C D)
+//Return 1 if the symbol replacing memory cell (A B C D...)
 uint8_t is_mem_sumbol(uint8_t chr)
 {
-  if ((chr>64)&&(chr<69))
+  uint8_t end_char = MEMORY_START_SYMB + MEMORY_CELLS_SIZE;
+  if ((chr >= MEMORY_START_SYMB) && (chr < end_char))
     return 1;
   else
     return 0;
