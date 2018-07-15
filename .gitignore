@@ -1,4 +1,3 @@
 *.o
 *.cout
-*.s
 /Debug
