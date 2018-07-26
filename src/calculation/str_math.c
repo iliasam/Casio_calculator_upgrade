@@ -37,15 +37,19 @@ uint8_t work_buffer_num_count = 0;//Counter of numbers in "numbers" buffer
 
 double memory_cells[MEMORY_CELLS_SIZE];//Memory - replaced by A B C D ... symbols
 
+void prepeare_solved_result(CalcAnswerType *tmp_answer);
+
 //Mathematical operations registers
 double x;
 double y;
 double z;
 
-uint8_t max_bracket_levell;//максимальный уровень скобок рабочем буфере
+uint8_t max_bracket_levell;// Maximul lelel of brackets in working buffer
 
 CalcErrorType errors = CACL_ERR_NO;
 double answer = 0.0;
+uint8_t in_bin_flag = 0;//Binary number appeared in input formula
+uint8_t in_hex_flag = 0;//Hex number appeared in input formula
 
 //*****************************************************************************
 
@@ -60,6 +64,8 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
   tmp_answer.Error = CACL_ERR_NO;
   work_buffer_num_count = 0;
   errors = CACL_ERR_NO;
+  in_bin_flag = 0;
+  in_hex_flag = 0;
   
   fill_work_buffer(txt, length);
   replace_symbols_in_work_buffer();
@@ -77,23 +83,27 @@ CalcAnswerType solve(uint8_t *txt,uint8_t length)
   {
     fill_sub_buffer(&work_buffer[0],work_buffer_length);
     solve_sub_buffer();
-    tmp_answer.Answer = answer;
-    tmp_answer.Error = errors;
-    save_answer_to_memory();
+    prepeare_solved_result(&tmp_answer);
     return tmp_answer;
   }
-  //обработка скобок
+  // Process brackets
   solve_work_buffer();
   
-  tmp_answer.Answer = answer;
-  tmp_answer.Error = errors;
-  
-  save_answer_to_memory();
+  prepeare_solved_result(&tmp_answer);  
 
   return tmp_answer;
 }
 
-//Save last answer to memory cell
+void prepeare_solved_result(CalcAnswerType *tmp_answer)
+{
+  tmp_answer->Answer = answer;
+  tmp_answer->Error = errors;
+  tmp_answer->BinFlag = in_bin_flag;
+  tmp_answer->HexFlag = in_hex_flag;
+  save_answer_to_memory();
+}
+
+//Save last answer to memory cell ('R')
 void save_answer_to_memory(void)
 {
   uint8_t pos = MEMORY_ANSWER_SYMB - MEMORY_START_SYMB;
@@ -212,11 +222,29 @@ void find_numbers(void)
         if (current_chr == SYMB_MINUS_CODE)
           work_buffer[i-1] = '-'; //Convert special minus symbol to conventional minus
         
-        double new_value = strtod((const char *)&work_buffer[i-1], &end_ptr);
-        add_new_number_to_buffer(new_value);
-  
-        uint32_t str_begin = (uint32_t)&work_buffer[i-1];//Start of the number
+        uint8_t bin_flag = 0;
+        if (current_chr == '0')
+        {
+          if (work_buffer[i] == 'b') //0b
+          {
+            long int bin_value = strtol((const char *)&work_buffer[i+1], &end_ptr, 2);
+            bin_flag = 1;
+            in_bin_flag = 1;
+            add_new_number_to_buffer((double)bin_value);
+          }
+          if (work_buffer[i] == 'x')//0x
+          {
+            in_hex_flag = 1;
+          }
+        }
         
+        if (bin_flag == 0)
+        {
+          double new_value = strtod((const char *)&work_buffer[i-1], &end_ptr);
+          add_new_number_to_buffer(new_value);
+        }
+        
+        uint32_t str_begin = (uint32_t)&work_buffer[i-1];//Start of the number
         lng = (uint16_t)((uint32_t)end_ptr - str_begin);//Length of number in chars
         replace_by_char(&work_buffer[0], i-1, (uint8_t)lng, (REPLACE_SYMB_CODE-1) + work_buffer_num_count);//REPLACE_SYMB_CODE - symbol 'А' in ASCII
         work_buffer_length = work_buffer_length - (uint8_t)lng + 1;
@@ -295,11 +323,15 @@ void solve_sub_buffer(void)
         {
           chr=sub_buffer[i];
           i++;
-          if (is_x_level_func(chr,level)==1){solve_func(i-1);found=1;}//если нашлась функция, вычислить ее
+          if (is_x_level_func(chr,level)==1)
+          {
+            solve_func(i-1);//если нашлась функция, вычислить ее
+            found=1;
+          }
         } while ((i<=sub_buffer_length-1)&&(found==0)&&(errors==0));
     } while ((found==1)&&(errors==0));
     level++;//если во всей подстроке функций такого уровня больше нет
-  }while ((level<6)&&(errors==0));
+  } while ((level<6)&&(errors==0));
   
   if (errors!= 0)
     return;

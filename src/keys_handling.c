@@ -153,9 +153,19 @@ const char* get_text_from_key_code(uint16_t key_code)
           return keys_text_array[i].basic_text;
         }
       }
-        
-    }
-  }
+      else if (formula_input_state == INPUT_MODE_BIN)
+      {
+        if ((keys_text_array[i].basic_text != NULL) &&
+            ( (keys_text_array[i].basic_text[0] == '0') ||
+              (keys_text_array[i].basic_text[0] == '1')) )
+            return keys_text_array[i].basic_text;
+          else
+            formula_input_state = INPUT_MODE_BASIC;
+          return keys_text_array[i].basic_text;
+      }
+      
+    }//if keys_text_array ...
+  }//end of for
   return NULL;
 }
 

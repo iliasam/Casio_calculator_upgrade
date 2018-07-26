@@ -21,6 +21,8 @@ typedef struct
 {
   double        Answer;
   CalcErrorType Error;
+  uint8_t       HexFlag;//Hex number appeared in input formula
+  uint8_t       BinFlag;//Binary number appeared in input formula
 } CalcAnswerType;
 
 void fill_work_buffer(uint8_t *txt,uint8_t length);
