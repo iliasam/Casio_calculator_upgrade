@@ -124,7 +124,7 @@ void do_single_adc_measurements(void)
   //APD_temperature_raw = readADC1(ADC_TEMP_CHANNEL);
 }
 
-double measure_battery_voltage(void)
+float measure_battery_voltage(void)
 {
   GPIO_InitTypeDef  GPIO_InitStructure;
   
@@ -134,7 +134,7 @@ double measure_battery_voltage(void)
   GPIO_Init(BATT_GND_PORT, &GPIO_InitStructure);
   GPIO_ResetBits(BATT_GND_PORT, BATT_GND_PIN);//pull  low
   
-  double result = (double)readADC1(ADC_Channel_7) / 620.0;
+  float result = (float)readADC1(ADC_Channel_7) / 620.0f;
   
   GPIO_InitStructure.GPIO_Pin   = BATT_GND_PIN;
   GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;

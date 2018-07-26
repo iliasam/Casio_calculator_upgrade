@@ -27,6 +27,10 @@ extern uint16_t formula_current_length;
 
 CalcAnswerType calc_result;
 
+float battery_voltage = 0.0f;
+
+uint16_t current_key_state;
+
 int main()
 {
   char str[32];
@@ -52,18 +56,18 @@ int main()
     display_draw_input_handler();
     display_draw_menu_handler();
     
-    uint16_t key_state = keys_polling();
-    process_key_state(key_state);
+    current_key_state = keys_polling();
+    process_key_state(current_key_state);
+    
+    battery_voltage = measure_battery_voltage();
     
     if (mode_state == FORMULA_INPUT)//debug
     {
-      //delay_ms(1000);	//	секундная задержка
+      draw_status_line();
+      //delay_ms(1000);
+      /*
       sprintf(str,"CNT: %d\n", cnt);
       lcd_draw_string(str, 0, FONT_SIZE_8*4, FONT_SIZE_8, 0);
-      
-      double tmp = measure_battery_voltage();
-      sprintf(str,"BAT: %.2g", tmp);
-      lcd_draw_string(str, 0, FONT_SIZE_8*5, FONT_SIZE_8, 0);
       
       sprintf(str,"test: %d", tmp_cnt);
       lcd_draw_string(str, 0, FONT_SIZE_8*6, FONT_SIZE_8, 0);
@@ -71,6 +75,7 @@ int main()
       lcd_gotoxy(0,4);
       sprintf(str,"key: %d    ", key_state);
       lcd_draw_string(str, 0, FONT_SIZE_8*7, FONT_SIZE_8, 0);
+      */
     }
     
     lcd_update();

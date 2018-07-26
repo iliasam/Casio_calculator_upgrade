@@ -18,7 +18,7 @@ void init_sys_clock(void);
 
 void init_adc_single_measure(void);
 
-double measure_battery_voltage(void);
+float measure_battery_voltage(void);
 void rtc_init(void);
 void go_to_sleep_mode(void);
 void EXTI_Configuration(FunctionalState state);

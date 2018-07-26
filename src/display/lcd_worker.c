@@ -1,6 +1,6 @@
 //Special framebuffer wrapper used for basic operations - text drawing
 #include "lcd_worker.h"
-#include "main.h"
+#include "math_defines.h"
 
 uint16_t lcd_cursor_text_x = 0;
 uint16_t lcd_cursor_text_y = 0;
@@ -235,6 +235,15 @@ void draw_caption_bar(uint8_t height)
     {
         lcd_set_pixel(x_pos, y_pos);
     }
+  }
+}
+
+void draw_black_line(uint16_t y)
+{
+  uint16_t x_pos;
+  for (x_pos = 0; x_pos < LCD_RIGHT_OFFSET; x_pos++)
+  {
+    lcd_set_pixel(x_pos, y);
   }
 }
 

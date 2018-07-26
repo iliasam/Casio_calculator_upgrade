@@ -3,6 +3,7 @@
 #include "display_handling.h"
 #include "main.h"
 #include <stddef.h>
+#include <ctype.h>
 
 extern ModeStateType mode_state;
 extern FormulaInputStateType formula_input_state;
@@ -19,6 +20,7 @@ void callback_key_right_menu(uint16_t key_code);
 
 void callback_key_alpha_formula(uint16_t key_code);
 void callback_key_shift_formula(uint16_t key_code);
+void callback_key_dots_formula(uint16_t key_code);
 
 void callback_key_exe_formula(uint16_t key_code);
 void callback_key_exe_menu(uint16_t key_code);
@@ -74,6 +76,7 @@ KeyTextType keys_text_array[] =
 KeyFunctionalType keys_functional_array[] = 
 {
   {25, callback_key_del_formula,   NULL},//DEL
+  {37, callback_key_dots_formula,   NULL},//two dots
   {38, callback_key_answer_menu,   NULL},//ENG
   {47, callback_key_right_formula, callback_key_right_menu},//Right
   {48, callback_key_left_formula,  callback_key_left_menu},//Left
@@ -101,9 +104,10 @@ void process_key_state(uint16_t new_key_state)
     
     if (mode_state == FORMULA_INPUT)
     {
-      if (formula_add_new_keys_symbol(new_key_state) > 0)//test was added
+      if (formula_add_new_keys_symbol(new_key_state) > 0)//text was added
       {
-        if (formula_input_state != INPUT_MODE_BASIC)
+        if ((formula_input_state == INPUT_MODE_ALPHA) ||
+            (formula_input_state == INPUT_MODE_SHIFT))
           formula_input_state = INPUT_MODE_BASIC;//switch to basic input mode after adding text
         return;
       }
@@ -134,6 +138,22 @@ const char* get_text_from_key_code(uint16_t key_code)
         return keys_text_array[i].alpha_text;
       if (formula_input_state == INPUT_MODE_SHIFT)
         return keys_text_array[i].shift_text;
+      if (formula_input_state == INPUT_MODE_HEX)
+      {
+        if (keys_text_array[i].basic_text != NULL &&
+            isdigit(keys_text_array[i].basic_text[0]))
+          return keys_text_array[i].basic_text;
+        else if (keys_text_array[i].alpha_text != NULL &&
+                 ((uint8_t)keys_text_array[i].alpha_text[0] >= 'A' &&
+                  (uint8_t)keys_text_array[i].alpha_text[0] <= 'F'))
+          return keys_text_array[i].alpha_text;
+        else
+        {
+          formula_input_state = INPUT_MODE_BASIC;
+          return keys_text_array[i].basic_text;
+        }
+      }
+        
     }
   }
   return NULL;
@@ -187,6 +207,19 @@ void callback_key_del_formula(uint16_t key_code)
   formula_delete_symbol();
 }
 
+//Two dots key
+void callback_key_dots_formula(uint16_t key_code)
+{
+  if (formula_input_state == INPUT_MODE_BASIC)
+    formula_input_state = INPUT_MODE_HEX;
+  else if (formula_input_state == INPUT_MODE_HEX)
+    formula_input_state = INPUT_MODE_BIN;
+  else
+    formula_input_state = INPUT_MODE_BASIC;
+  
+  formula_add_system_perfex(formula_input_state);
+}
+
 void callback_key_alpha_formula(uint16_t key_code)
 {
   if (formula_input_state != INPUT_MODE_ALPHA)
@@ -206,6 +239,7 @@ void callback_key_shift_formula(uint16_t key_code)
 //"EXE" button
 void callback_key_exe_formula(uint16_t key_code)
 {
+  formula_input_state = INPUT_MODE_BASIC;
   solve_formula();
 }
 

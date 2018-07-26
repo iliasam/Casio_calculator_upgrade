@@ -2099,6 +2099,9 @@
     <group>
       <name>Calculation</name>
       <file>
+        <name>$PROJ_DIR$\src\calculation\math_defines.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\src\calculation\str_math.c</name>
       </file>
       <file>

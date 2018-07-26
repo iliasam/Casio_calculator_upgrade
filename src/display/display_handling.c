@@ -51,7 +51,7 @@ void display_draw_input_handler(void)
     //lcd_draw_string(formula_text, 0, 0*display_input_font, display_input_font, 0);
     //draw_formula_input_cursor();
     draw_cur_oneline_formula();
-    draw_answer_in_line(calc_result, 2);
+    draw_answer_in_line(calc_result, 1);
   }
 }
 
@@ -116,6 +116,10 @@ void draw_formula_input_cursor(uint16_t x, uint16_t y)
     local_cursor = CURSOR_INPUT_ALPHA;
   else if (formula_input_state == INPUT_MODE_SHIFT)
     local_cursor = CURSOR_INPUT_SHIFT;
+  else if (formula_input_state == INPUT_MODE_HEX)
+    local_cursor = CURSOR_INPUT_HEX;
+  else if (formula_input_state == INPUT_MODE_BIN)
+    local_cursor = CURSOR_INPUT_BIN;
   
   draw_blinking_cursor(local_cursor, x, y, display_input_font);
 }
@@ -132,7 +136,7 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
     cursor_enabled = 1;
     prev_time = cur_time;
   }
-  else if ((cur_time - prev_time) > 500)//used for blinking
+  else if ((cur_time - prev_time) > CURSOR_BLINK_PERIOD)//used for blinking
   {
     prev_time = cur_time;
     cursor_enabled^= 1;
@@ -149,12 +153,22 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
       }
       case CURSOR_INPUT_ALPHA: 
       {
-        lcd_draw_char('a', x, y, font_size, LCD_INVERTED_FLAG);//97 - a
+        lcd_draw_char('a', x, y, font_size, LCD_INVERTED_FLAG);
         break;
       }
       case CURSOR_INPUT_SHIFT: 
       {
-        lcd_draw_char('s', x, y, font_size, LCD_INVERTED_FLAG);//115 - s
+        lcd_draw_char('s', x, y, font_size, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CURSOR_INPUT_HEX: 
+      {
+        lcd_draw_char('h', x, y, font_size, LCD_INVERTED_FLAG);
+        break;
+      }
+      case CURSOR_INPUT_BIN: 
+      {
+        lcd_draw_char('b', x, y, font_size, LCD_INVERTED_FLAG);
         break;
       }
       default: break;
@@ -190,35 +204,29 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
     switch (calc_result.Error)
     {
       case CACL_ERR_BRACKETS:
-      {
         lcd_draw_string("BRAKETS ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+      
       case CACL_ERR_ZERO_DIV:
-      {
         lcd_draw_string("DIV BY 0 ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+        
       case CACL_ERR_NO_ARGUMENT:
-      {
         lcd_draw_string("NO ARG ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+
       case CACL_ERR_LOG:
-      {
         lcd_draw_string("LN(x<0) ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+       
       case CACL_ERR_ROOT:
-      {
         lcd_draw_string("ROOT ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+        
       case CACL_ERR_TRIGON:
-      {
         lcd_draw_string("TRIG ERROR", 0, line*display_input_font, display_input_font, LCD_INVERTED_FLAG);
         break;
-      }
+        
       default:
       {
         sprintf(str,"ERROR: %d", (uint8_t)calc_result.Error);
@@ -295,13 +303,16 @@ uint8_t generate_answer(char* ans_string, double value)
       break;
     }
     default: break;
-    
-    
   }
-
-  
-  
   return length;
+}
+
+void draw_status_line(void)
+{
+  char str[32];
+  draw_black_line(STATUS_LINE_Y_POS);
+  sprintf(str,"BAT: %.2f | KEY: %d | ", battery_voltage, current_key_state);
+  lcd_draw_string(str, 0, (STATUS_LINE_Y_POS+2), FONT_SIZE_6, 0);
 }
 
 void display_handling_update_button_pressed(void)

@@ -36,7 +36,7 @@ uint16_t lcd_draw_string(char *s, uint16_t x, uint16_t y, uint8_t font_size, uin
 uint16_t lcd_draw_string_cur(char *s, uint8_t font_size, uint8_t flags);
 uint16_t get_font_width(uint8_t font);
 void draw_caption_bar(uint8_t height);
-
+void draw_black_line(uint16_t y);
 
 #endif
 

@@ -3,12 +3,17 @@
 #include "stdint.h"
 #include "str_math.h"
 
+#define CURSOR_BLINK_PERIOD     500 //[ms]
+
+#define STATUS_LINE_Y_POS       56
 
 typedef enum
 {
   CURSOR_INPUT_BASIC = 0,//<
   CURSOR_INPUT_ALPHA,//"A"
   CURSOR_INPUT_SHIFT,//"S"
+  CURSOR_INPUT_HEX,//"H"
+  CURSOR_INPUT_BIN,//"b"
 }CursorType;
 
 typedef enum
@@ -41,6 +46,7 @@ void draw_cur_oneline_formula(void);
 void draw_formula_input_cursor(uint16_t x, uint16_t y);
 void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t font_size);
 void draw_answer_in_line(CalcAnswerType result, uint16_t line);
+void draw_status_line(void);
 
 void menu_move_cursor_down(void);
 void menu_move_cursor_up(void);

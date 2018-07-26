@@ -18,10 +18,13 @@ void cut_chr_from_str(uint8_t *source,uint8_t pos)
   text_delete_symbols((char*)source,  pos, 1);
 } 
 
-
-void replace_by_char(uint8_t *source,uint8_t pos,uint8_t lng,uint8_t chr)
+// Remove some symbols from string and rplace them by symbol
+// source - source string
+// pos - start of substring to be removed
+// lng - length of substring
+// chr - character that replaces substring
+void replace_by_char(uint8_t *source, uint8_t pos, uint8_t lng, uint8_t chr)
 {
-  //удаляет из строки часть символов и заменяет их символом
   cut_from_str(source,pos,lng);
   add_to_str(&chr,source,1,pos);
 }

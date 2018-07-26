@@ -3,6 +3,8 @@
 
 #include "str_math.h"
 
+#include "math_defines.h"
+
 #include "stdio.h"
 #include "stdint.h"
 #include <ctype.h>

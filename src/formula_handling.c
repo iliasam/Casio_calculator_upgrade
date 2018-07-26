@@ -115,3 +115,23 @@ uint16_t formula_calculate_cursor_jump(char* text)
   return text_length;// full length of text
 }
 
+//Add "0x" perfix to formula
+void formula_add_system_perfex(FormulaInputStateType new_perfix_type)
+{
+  int tmp_pos = formula_cursor_position - 2;
+  if (tmp_pos >= 0)
+  {
+    if ((strcmp(&formula_text[tmp_pos], "0x") == 0) ||
+        (strcmp(&formula_text[tmp_pos], "0b") == 0))
+    {
+      formula_delete_symbol();
+      formula_delete_symbol();
+    }
+  }
+  
+  if (new_perfix_type == INPUT_MODE_HEX)
+    formula_add_text("0x");
+  if (new_perfix_type == INPUT_MODE_BIN)
+    formula_add_text("0b");
+}
+
