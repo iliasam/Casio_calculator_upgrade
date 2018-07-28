@@ -7,9 +7,10 @@ void solve_formula(void);
 
 typedef enum 
 {
-  FORMULA_INPUT = 0,
-  SELECTOR1_MENU_MODE,
-}ModeStateType;
+  FORMULA_INPUT = 0, //Input formula
+  SELECTOR1_MENU_MODE, //Select norm/sci/eng
+  SAVE_MEM_MENU_MODE, //Save answer to memory
+} ModeStateType;
 
 typedef enum 
 {

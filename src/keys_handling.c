@@ -1,6 +1,7 @@
 #include "keys_handling.h"
 #include "formula_handling.h"
 #include "display_handling.h"
+#include "menu_handling.h"
 #include "main.h"
 #include <stddef.h>
 #include <ctype.h>
@@ -9,6 +10,8 @@ extern ModeStateType mode_state;
 extern FormulaInputStateType formula_input_state;
 
 void callback_key_ac_formula(uint16_t key_code);
+void callback_key_ac_menu(uint16_t key_code);
+
 void callback_key_left_formula(uint16_t key_code);
 void callback_key_right_formula(uint16_t key_code);
 void callback_key_del_formula(uint16_t key_code);
@@ -21,6 +24,7 @@ void callback_key_right_menu(uint16_t key_code);
 void callback_key_alpha_formula(uint16_t key_code);
 void callback_key_shift_formula(uint16_t key_code);
 void callback_key_dots_formula(uint16_t key_code);
+void callback_key_save_cell_menu(uint16_t key_code);
 
 void callback_key_exe_formula(uint16_t key_code);
 void callback_key_exe_menu(uint16_t key_code);
@@ -75,6 +79,7 @@ KeyTextType keys_text_array[] =
 //It hold pointers to the functions that must be called when button is pressed
 KeyFunctionalType keys_functional_array[] = 
 {
+  {20, callback_key_save_cell_menu,   NULL},//DEL
   {25, callback_key_del_formula,   NULL},//DEL
   {37, callback_key_dots_formula,   NULL},//two dots
   {38, callback_key_answer_menu,   NULL},//ENG
@@ -86,7 +91,7 @@ KeyFunctionalType keys_functional_array[] =
   {56, callback_key_alpha_formula, NULL},//Alpha
   {60, NULL, NULL},//MODE
   {62, callback_key_exe_formula,   callback_key_exe_menu},//EXE
-  {64, callback_key_ac_formula,    NULL},//AC
+  {64, callback_key_ac_formula,    callback_key_ac_menu},//AC
 };
 
 #define KEYS_TEXT_ARRAY_COUNT (sizeof(keys_text_array) / sizeof(KeyTextType))
@@ -278,6 +283,17 @@ void callback_key_answer_menu(uint16_t key_code)
 {
   mode_state = SELECTOR1_MENU_MODE;
   prepare_menu_selector1_for_answer_mode();
+}
+
+//"->" button - enter to saving answer menu
+void callback_key_save_cell_menu(uint16_t key_code)
+{
+  mode_state = SAVE_MEM_MENU_MODE;
+}
+
+void callback_key_ac_menu(uint16_t key_code)
+{
+  menu_exit();
 }
 
 void callback_key_exe_menu(uint16_t key_code)

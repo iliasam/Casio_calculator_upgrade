@@ -6,6 +6,7 @@
 #include "stm32f10x_rtc.h"
 #include "text_functions.h"
 #include "lcd_worker.h"
+#include "menu_handling.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
@@ -21,7 +22,7 @@ extern uint16_t formula_current_length;
 
 extern CalcAnswerType calc_result;
 
-AnswerType answer_type_mode = ANSWER_TYPE_NORMAL;
+AnswerType answer_type_mode = ANSWER_TYPE_NORMAL; //norm/sci/eng
 
 uint8_t display_input_font = FONT_SIZE_8;
 
@@ -29,8 +30,6 @@ char tmp_formula_buf[50];//holds temporary formula part
 
 extern uint8_t button_pressed_lcd_flag;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
 uint8_t button_pressed_lcd_local_flag = 0;
-
-MenuSelector1Type menu_selector1_data;
 
 uint8_t generate_answer(char* ans_string, double value);
 
@@ -52,14 +51,6 @@ void display_draw_input_handler(void)
     //draw_formula_input_cursor();
     draw_cur_oneline_formula();
     draw_answer_in_line(calc_result, 1);
-  }
-}
-
-void display_draw_menu_handler(void)
-{
-  if (mode_state == SELECTOR1_MENU_MODE)
-  {
-    draw_selector1_menu();
   }
 }
 
@@ -237,6 +228,22 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
   }
 }
 
+//Write "value" to "dest_str" string
+// "    123.456"
+void draw_value_at_right(uint8_t* dest_str, double value, uint8_t str_length)
+{
+  char str[32];
+  uint8_t length = sprintf(str,"%.10g", value);
+  
+  if (length > str_length)
+      return;//too long
+  
+  uint8_t tmp_start = str_length - length; 
+  for (uint8_t i = 0; i < length; i++)
+    dest_str[tmp_start + i] = str[i];
+
+}
+
 uint8_t generate_answer(char* ans_string, double value)
 {
   uint8_t length = 0;
@@ -326,72 +333,4 @@ void display_handling_update_button_pressed(void)
     button_pressed_lcd_local_flag = 0;
 }
 
-void draw_selector1_menu(void)
-{
-  uint8_t i;
-  uint8_t font_width =  get_font_width(FONT_SIZE_8);
-  draw_caption_bar(FONT_SIZE_8);
-  lcd_draw_string(menu_selector1_data.menu_caption, 0, 0*FONT_SIZE_8, FONT_SIZE_8, LCD_INVERTED_FLAG);
-  
-  for (i=0; i < menu_selector1_data.number_of_items; i++)
-  {
-    if (menu_selector1_data.selected_item == i)
-      lcd_draw_char('>', 0, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);//cursor
-    
-    lcd_draw_char(((uint8_t)'0' + i + 1), font_width, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);//print item number
-    lcd_draw_char(':', font_width*2, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);
-    
-    lcd_draw_string(menu_selector1_data.item_names[i], (font_width*3), (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);
-  }
-}
 
-void prepare_menu_selector1_for_answer_mode(void)
-{
-  static const char menu_name[] = "ANSWER TYPE:";
-  static const char item0[] = "NORMAL";
-  static const char item1[] = "SCIENCE";
-  static const char item2[] = "ENGINEERING";
-  
-  menu_selector1_data.menu_caption = (char*)menu_name;
-  menu_selector1_data.number_of_items = 3;
-  menu_selector1_data.selected_item = (uint8_t)answer_type_mode;
-  menu_selector1_data.item_names[0] = (char*)item0;
-  menu_selector1_data.item_names[1] = (char*)item1;
-  menu_selector1_data.item_names[2] = (char*)item2;
-  menu_selector1_data.menu_type     = MENU_SELECTOR1_ANSWER_MODE;
-}
-
-void menu_move_cursor_down(void)
-{
-  if (mode_state == SELECTOR1_MENU_MODE)
-  {
-    menu_selector1_data.selected_item++;
-    if (menu_selector1_data.selected_item > (menu_selector1_data.number_of_items-1))
-      menu_selector1_data.selected_item = menu_selector1_data.number_of_items-1;
-  }
-}
-
-void menu_move_cursor_up(void)
-{
-  if (mode_state == SELECTOR1_MENU_MODE)
-  {
-    if (menu_selector1_data.selected_item > 0)
-      menu_selector1_data.selected_item--;
-  }
-}
-
-//When "EXE" pressed
-void menu_leave(void)
-{
-  if (mode_state == SELECTOR1_MENU_MODE)
-    leave_menu_selector1();
-}
-
-void leave_menu_selector1(void)
-{
-  if (menu_selector1_data.menu_type == MENU_SELECTOR1_ANSWER_MODE)
-  {
-    answer_type_mode = (AnswerType)menu_selector1_data.selected_item;
-    mode_state = FORMULA_INPUT;
-  }
-}

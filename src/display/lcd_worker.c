@@ -102,7 +102,7 @@ uint16_t lcd_draw_string_cur(char *s, uint8_t font_size, uint8_t flags)
   return length;
 }
 
-//x - size in char (not in pixel)
+//x - size in pixel
 //y - in pixel
 void lcd_draw_char(uint8_t chr, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags)
 {

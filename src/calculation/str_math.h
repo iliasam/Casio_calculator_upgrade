@@ -4,6 +4,8 @@
 #include "stdio.h"
 #include "stdint.h"
 
+#define MEMORY_CELLS_NUMBER       26
+
 typedef enum
 {
   CACL_ERR_NO = 0,
@@ -73,5 +75,8 @@ void replace_functions(void);
 void replace_metric_symbols(void);
 
 void save_answer_to_memory(void);
+
+void str_math_save_to_mem_cell(uint8_t cell, double value);
+double str_math_get_from_mem_cell(uint8_t cell);
 
 #endif

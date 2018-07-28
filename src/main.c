@@ -9,10 +9,9 @@
 #include "keys_handling.h"
 #include "delay_us_timer.h"
 #include "lcd_worker.h"
-#include "text_functions.h"
 #include "display_handling.h"
+#include "menu_handling.h"
 #include "formula_handling.h"
-#include "str_math.h"
 
 void Delay_ms(uint32_t ms);
 volatile double test;

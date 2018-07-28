@@ -2138,6 +2138,9 @@
         <name>$PROJ_DIR$\src\display\lcd_worker.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\src\display\menu_handling.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\src\display\ST7565R.c</name>
       </file>
       <file>

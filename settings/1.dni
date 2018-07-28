@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=1312581056
+Checksum=2086520520
 [DisAssemblyWindow]
 NumStates=_ 1
 State 1=_ 0
@@ -122,10 +122,6 @@ ShowTimeLog=1
 SumEnabled=0
 ShowTimeSum=1
 SumSortOrder=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Count=0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -133,9 +129,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Aliases]
-Count=0
-SuppressDialog=0
 [DriverProfiling]
 Enabled=0
 Mode=3
@@ -146,3 +139,10 @@ Exclusions=
 Enabled=0
 [CallStackStripe]
 ShowTiming=1
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Count=0
+[Aliases]
+Count=0
+SuppressDialog=0

@@ -19,7 +19,7 @@
 //2+2 -> 192+193
 #define REPLACE_SYMB_CODE       192
 #define MAX_FORMULA_LENGTH      100
-#define MEMORY_CELLS_SIZE       28
+
 #define NUMBER_CELLS_SIZE       28
 
 #define MEMORY_START_SYMB       'A'
@@ -35,7 +35,7 @@ uint8_t sub_buffer_length = 0;//количество символов в буфере подстроки
 double numbers[NUMBER_CELLS_SIZE];//Buffer for holding numbers. This numbers are replaced by chars with codes starting from REPLACE_SYMB_CODE
 uint8_t work_buffer_num_count = 0;//Counter of numbers in "numbers" buffer
 
-double memory_cells[MEMORY_CELLS_SIZE];//Memory - replaced by A B C D ... symbols
+double memory_cells[MEMORY_CELLS_NUMBER];//Memory - replaced by A B C D ... symbols
 
 void prepeare_solved_result(CalcAnswerType *tmp_answer);
 
@@ -759,7 +759,7 @@ uint8_t is_num_sumbol(uint8_t chr)
 //Return 1 if the symbol replacing memory cell (A B C D...)
 uint8_t is_mem_sumbol(uint8_t chr)
 {
-  uint8_t end_char = MEMORY_START_SYMB + MEMORY_CELLS_SIZE;
+  uint8_t end_char = MEMORY_START_SYMB + MEMORY_CELLS_NUMBER;
   if ((chr >= MEMORY_START_SYMB) && (chr < end_char))
     return 1;
   else
@@ -822,4 +822,22 @@ void bracket_anlyse(void)
   }
   if (bracket_cnt != 0)
     errors = CACL_ERR_BRACKETS;//нечетное число скобок
+}
+
+//Save "value" to memory cell with number "cell"
+void str_math_save_to_mem_cell(uint8_t cell, double value)
+{
+  if (cell > MEMORY_CELLS_NUMBER)
+    return;
+  
+  memory_cells[cell] = value;
+}
+
+// Get value of memory "cell" 
+double str_math_get_from_mem_cell(uint8_t cell)
+{
+  if (cell < MEMORY_CELLS_NUMBER)
+    return memory_cells[cell];
+  else
+    return 0.0;
 }
