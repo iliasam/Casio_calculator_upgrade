@@ -168,7 +168,7 @@ void draw_blinking_cursor(CursorType cursor, uint16_t x, uint16_t y, uint8_t fon
 }
 
 //Draw answer in single line
-//Нужно доделать - отображение, или выбран инжинерный режим
+//Нужно доделать - отображение, или выбран инженерный режим
 void draw_answer_in_line(CalcAnswerType result, uint16_t line)
 {
   char str[32];
