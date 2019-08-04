@@ -34,6 +34,13 @@ void draw_save_mem_menu_sub(void);
 void draw_selector1_menu(void);
 void leave_save_mem_menu(void);
 void leave_menu_selector1(void);
+void draw_extended_answer_menu(void);
+void leave_extended_answer_menu(void);
+
+uint8_t number_is_integer(double value);
+
+void draw_bin_bar(uint8_t start_index, uint8_t y_pos);
+void draw_16bit_value(uint16_t value, uint8_t y_pos);
 
 //*****************************************************************************
 
@@ -45,11 +52,90 @@ void display_draw_menu_handler(void)
       draw_selector1_menu();
     break;
     
+    case ANSWER_DISPLAY_MENU_MODE:
+      draw_extended_answer_menu();
+    break;
+    
     case SAVE_MEM_MENU_MODE:
       draw_save_mem_menu();
     break;
   }
 }
+
+void draw_extended_answer_menu(void)
+{
+  draw_caption_bar(FONT_SIZE_8);
+  lcd_draw_string("ANSWER:", 0, 0*FONT_SIZE_8, FONT_SIZE_8, LCD_INVERTED_FLAG);
+  
+  if (calc_result.Error != CACL_ERR_NO)
+  {
+    draw_answer_in_line(calc_result, 2);
+    return;
+  }
+  
+  draw_good_answer_in_line(calc_result, 1, ANSWER_TYPE_NORMAL, DRAW_ANSWER_LEFT);
+  draw_good_answer_in_line(calc_result, 2, ANSWER_TYPE_SCIENCE, DRAW_ANSWER_LEFT);
+  draw_good_answer_in_line(calc_result, 3, ANSWER_TYPE_ENGINEERING, DRAW_ANSWER_LEFT);
+  
+  if (number_is_integer(calc_result.Answer))
+  {
+    draw_good_answer_in_line(calc_result, 4, ANSWER_TYPE_HEX, DRAW_ANSWER_LEFT);
+    
+    draw_black_line(40);
+    draw_bin_bar(15, 40+2);
+    draw_16bit_value((uint16_t)calc_result.Answer, 55);
+  }
+}  
+
+uint8_t number_is_integer(double value)
+{
+  double part = value - floor(value);
+  if (abs(part) < 1e-5)
+    return 1;
+  else
+    return 0;
+}
+
+void draw_bin_bar(uint8_t start_index, uint8_t y_pos)
+{
+  uint8_t x_pos = 3;
+  char tmp_str[3];
+  for (uint8_t i = 0; i < 16; i++)
+  {
+    uint8_t cur_num = start_index - i;
+    sprintf(tmp_str, "%d", cur_num);
+    
+    if (cur_num > 9)//two digits
+    {
+      lcd_draw_char(tmp_str[0], x_pos, y_pos, FONT_SIZE_6, 0);
+      lcd_draw_char(tmp_str[1], x_pos, y_pos + FONT_SIZE_6, FONT_SIZE_6, 0);
+      x_pos+= FONT_SIZE_8_WIDTH + 1;
+    }
+    else
+    {
+     lcd_draw_char(tmp_str[0], x_pos, y_pos + 3, FONT_SIZE_8, 0);
+     x_pos+= FONT_SIZE_8_WIDTH + 1;
+    }
+  }
+}
+
+void draw_16bit_value(uint16_t value, uint8_t y_pos)
+{
+  char cur_char;
+  uint8_t x_pos = 3;
+  
+  for (uint8_t i = 0; i < 16; i++)
+  {
+    if (value & 0x8000)
+      cur_char = '1';
+    else
+      cur_char = '0';
+    lcd_draw_char(cur_char, x_pos, y_pos, FONT_SIZE_8, 0);
+    x_pos+= FONT_SIZE_8_WIDTH + 1;
+    value = value << 1;
+  }
+}
+  
 
 //Save ansver to memory cell menu
 void draw_save_mem_menu(void)
@@ -120,7 +206,7 @@ void draw_selector1_menu(void)
   draw_caption_bar(FONT_SIZE_8);
   lcd_draw_string(menu_selector1_data.menu_caption, 0, 0*FONT_SIZE_8, FONT_SIZE_8, LCD_INVERTED_FLAG);
   
-  for (i=0; i < menu_selector1_data.number_of_items; i++)
+  for (i = 0; i < menu_selector1_data.number_of_items; i++)
   {
     if (menu_selector1_data.selected_item == i)
       lcd_draw_char('>', 0, (i+1)*FONT_SIZE_8, FONT_SIZE_8, 0);//cursor
@@ -190,6 +276,8 @@ void menu_leave(void)
     leave_menu_selector1();
   else if (mode_state == SAVE_MEM_MENU_MODE)
     leave_save_mem_menu();
+  else if (mode_state == ANSWER_DISPLAY_MENU_MODE)
+    leave_extended_answer_menu();
 }
 
 void leave_menu_selector1(void)
@@ -208,5 +296,10 @@ void leave_save_mem_menu(void)
     str_math_save_to_mem_cell(save_memory_cell, calc_result.Answer);
   }
   
+  mode_state = FORMULA_INPUT;
+}
+
+void leave_extended_answer_menu(void)
+{
   mode_state = FORMULA_INPUT;
 }

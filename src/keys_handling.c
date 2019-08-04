@@ -31,6 +31,8 @@ void callback_key_exe_menu(uint16_t key_code);
 
 void callback_key_answer_menu(uint16_t key_code);
 
+void callback_key_extended_answer(uint16_t key_code);
+
 uint8_t button_pressed_lcd_flag = 0;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
 
 //Structure to hold information about keys and corresponding text
@@ -85,6 +87,7 @@ KeyFunctionalType keys_functional_array[] =
   {38, callback_key_answer_menu,   NULL},//ENG
   {47, callback_key_right_formula, callback_key_right_menu},//Right
   {48, callback_key_left_formula,  callback_key_left_menu},//Left
+  {49, callback_key_extended_answer, NULL},
   {52, NULL, callback_key_down_menu},//Down
   {54, NULL, callback_key_up_menu},//Up
   {55, callback_key_shift_formula, NULL},//Shift
@@ -283,6 +286,11 @@ void callback_key_answer_menu(uint16_t key_code)
 {
   mode_state = SELECTOR1_MENU_MODE;
   prepare_menu_selector1_for_answer_mode();
+}
+
+void callback_key_extended_answer(uint16_t key_code)
+{
+  mode_state = ANSWER_DISPLAY_MENU_MODE;
 }
 
 //"->" button - enter to saving answer menu

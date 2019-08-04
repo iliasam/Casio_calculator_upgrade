@@ -10,6 +10,7 @@ typedef enum
   FORMULA_INPUT = 0, //Input formula
   SELECTOR1_MENU_MODE, //Select norm/sci/eng
   SAVE_MEM_MENU_MODE, //Save answer to memory
+  ANSWER_DISPLAY_MENU_MODE, //Draw extended answer info
 } ModeStateType;
 
 typedef enum 

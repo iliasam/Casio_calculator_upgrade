@@ -104,6 +104,7 @@ uint16_t lcd_draw_string_cur(char *s, uint8_t font_size, uint8_t flags)
 
 //x - size in pixel
 //y - in pixel
+//font_size - height
 void lcd_draw_char(uint8_t chr, uint16_t x, uint16_t y, uint8_t font_size, uint8_t flags)
 {
   switch (font_size)

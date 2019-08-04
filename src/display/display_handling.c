@@ -13,6 +13,8 @@
 #include <math.h>
 #include "main.h"
 
+
+
 extern ModeStateType            mode_state;
 extern FormulaInputStateType    formula_input_state;
 
@@ -31,7 +33,8 @@ char tmp_formula_buf[50];//holds temporary formula part
 extern uint8_t button_pressed_lcd_flag;//flag to tell lcd handler that button was pressed. Cleared by lcd handling functions
 uint8_t button_pressed_lcd_local_flag = 0;
 
-uint8_t generate_answer(char* ans_string, double value);
+//uint8_t generate_answer(char* ans_string, double value);
+
 
 //#############################################################################
 
@@ -46,9 +49,6 @@ void display_draw_input_handler(void)
   
   if (mode_state == FORMULA_INPUT)
   {
-    //char str[32];
-    //lcd_draw_string(formula_text, 0, 0*display_input_font, display_input_font, 0);
-    //draw_formula_input_cursor();
     draw_cur_oneline_formula();
     draw_answer_in_line(calc_result, 1);
   }
@@ -63,7 +63,7 @@ void draw_cur_oneline_formula(void)
   if (formula_current_length < max_formula_lng)//formula is short
   {
     cur_cursor_x = formula_cursor_position * get_font_width(display_input_font);
-    lcd_draw_string(formula_text, 0, 0*display_input_font, display_input_font, 0);
+    lcd_draw_string(formula_text, 0, 0 * display_input_font, display_input_font, 0);
     draw_formula_input_cursor(cur_cursor_x, 0*display_input_font);
   }
   else
@@ -74,7 +74,7 @@ void draw_cur_oneline_formula(void)
       //cursor is at the beginning of formula - draw only beginning of formula
       memcpy(tmp_formula_buf, &formula_text[0], (max_formula_lng - 1));//copy text from begin of formula_text to tmp_formula_buf
       tmp_formula_buf[max_formula_lng] = 0;
-      lcd_draw_string(tmp_formula_buf, 0, 0*display_input_font, display_input_font, 0);
+      lcd_draw_string(tmp_formula_buf, 0, 0 * display_input_font, display_input_font, 0);
       cur_cursor_x = formula_cursor_position * get_font_width(display_input_font);
       draw_formula_input_cursor(cur_cursor_x, 0*display_input_font);
     }
@@ -175,20 +175,8 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
   
   if (result.Error == CACL_ERR_NO)//no errors
   {
-    uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / get_font_width(display_input_font) + 1;//maximum text width in symbols
-    
-    uint8_t length = generate_answer(str, calc_result.Answer);
-    if (length > max_text_lng)
-      return;//unknown error
-    
-    uint8_t add_length = max_text_lng - length;//number of symbols that must be added
-    uint8_t i;
-    for (i = 0; i < add_length; i++)
-    {
-      text_insert_string(str, " ", 0, 1);//add space char at the beginning of string
-    }
-    
-    lcd_draw_string(str, 0, line*display_input_font, display_input_font, 0);
+    draw_good_answer_in_line(result, line, answer_type_mode, DRAW_ANSWER_BRAKET);
+    return;
   }
   else
   {
@@ -228,6 +216,32 @@ void draw_answer_in_line(CalcAnswerType result, uint16_t line)
   }
 }
 
+void draw_good_answer_in_line(
+  CalcAnswerType result, uint16_t line, AnswerType ans_type, uint8_t params)
+{
+  char str[32];
+  
+  uint16_t max_text_lng = (LCD_RIGHT_OFFSET - LCD_LEFT_OFFSET) / 
+    get_font_width(display_input_font) + 1;//maximum text width in symbols
+    
+    uint8_t length = generate_answer_by_type(str, ans_type, calc_result.Answer, params);
+    if (length > max_text_lng)
+      return;//unknown error
+    
+    if ((params & DRAW_ANSWER_LEFT) == 0)
+    {
+      //move anfwer right
+      uint8_t add_length = max_text_lng - length;//number of symbols that must be added
+      uint8_t i;
+      for (i = 0; i < add_length; i++)
+      {
+        text_insert_string(str, " ", 0, 1);//add space char at the beginning of string
+      }
+    }
+
+    lcd_draw_string(str, 0, line * display_input_font, display_input_font, 0);
+}
+
 //Write "value" to "dest_str" string
 // "    123.456"
 void draw_value_at_right(uint8_t* dest_str, double value, uint8_t str_length)
@@ -244,20 +258,26 @@ void draw_value_at_right(uint8_t* dest_str, double value, uint8_t str_length)
 
 }
 
-uint8_t generate_answer(char* ans_string, double value)
+uint8_t generate_answer_by_type(
+  char* ans_string, AnswerType ans_type, double value, uint8_t params)
 {
   uint8_t length = 0;
   
-  switch (answer_type_mode)
+  switch (ans_type)
   {
     case ANSWER_TYPE_NORMAL:
     {
-      length = sprintf(ans_string,"%.10g<", value);
+      length = sprintf(ans_string,"%.10g", value);
       break;
     }
     case ANSWER_TYPE_SCIENCE:
     {
-      length = sprintf(ans_string,"%.10e<", value);
+      length = sprintf(ans_string,"%.10e", value);
+      break;
+    }
+    case ANSWER_TYPE_HEX:
+    {
+      length = sprintf(ans_string,"0x%X", (int64_t)value);
       break;
     }
     case ANSWER_TYPE_ENGINEERING:
@@ -306,13 +326,27 @@ uint8_t generate_answer(char* ans_string, double value)
         div = 1e-12;
       }
       
-      length = sprintf(ans_string,"%.10g%c<", (value / div), symbol);
+      length = sprintf(ans_string,"%.10g%c", (value / div), symbol);
       break;
     }
     default: break;
   }
+  
+  if (params & DRAW_ANSWER_BRAKET)
+  {
+    strcat(ans_string, "<");
+    length++;
+  }
+
   return length;
 }
+
+/*
+uint8_t generate_answer(char* ans_string, double value)
+{
+  return generate_answer_by_type(ans_string, answer_type_mode, value);
+}
+*/
 
 void draw_status_line(void)
 {
