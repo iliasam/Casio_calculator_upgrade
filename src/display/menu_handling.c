@@ -9,6 +9,7 @@
 #include "lcd_worker.h"
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include "main.h"
@@ -80,17 +81,24 @@ void draw_extended_answer_menu(void)
   if (number_is_integer(calc_result.Answer))
   {
     draw_good_answer_in_line(calc_result, 4, ANSWER_TYPE_HEX, DRAW_ANSWER_LEFT);
-    
     draw_black_line(40);
-    draw_bin_bar(15, 40+2);
-    draw_16bit_value((uint16_t)calc_result.Answer, 55);
+    
+    if (fabs(calc_result.Answer) < (double)0xFFFF)
+    {
+        draw_bin_bar(15, 40+2);
+        draw_16bit_value((uint16_t)calc_result.Answer, 55);
+    }
+    else
+    {
+      lcd_draw_string("Value > 0xFFFF", 0, 6*FONT_SIZE_8, FONT_SIZE_8, 0);
+    }
   }
 }  
 
 uint8_t number_is_integer(double value)
 {
   double part = value - floor(value);
-  if (abs(part) < 1e-5)
+  if (fabs(part) < 1e-5)
     return 1;
   else
     return 0;
